@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SessionType {
+  IELTS_LISTENING
+  IELTS_READING
+  IELTS_WRITING
+  IELTS_SPEAKING
+  MOCK_INTERVIEW_TECHNICAL
+  MOCK_INTERVIEW_BEHAVIORAL
+  MOCK_INTERVIEW_INTERPERSONAL
+  QUIZ
+}
+
+enum QuestionType {
+  MCQ
+  OPEN_ENDED
+}
+
+enum IELTSWritingTask {
+  TASK1
+  TASK2
+}
+
+enum Difficulty {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  name              String?
+  password          String
+  role              Role               @default(USER)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  sessions          Session[]
+  quizAttempts      QuizAttempt[]
+  writingSubmissions WritingSubmission[]
+  userProgress      UserProgress[]
+}
+
+model Session {
+  id          String       @id @default(cuid())
+  user        User         @relation(fields: [userId], references: [id])
+  userId      String
+  type        SessionType
+  startedAt   DateTime     @default(now())
+  endedAt     DateTime?
+  score       Float?       // overall score (percentage or band)
+  transcript  String?      // transcript for speaking sessions
+  feedback    Json?        // AI feedback (structured JSON)
+
+  answers     Answer[]
+  writingSubmissions WritingSubmission[]  // back-relation for WritingSubmission.session
+
+  @@index([userId])
+}
+
+model ListeningAudio {
+  id         String     @id @default(cuid())
+  title      String
+  audioUrl   String
+  transcript String     // Transcript text for AI question generation
+  createdAt  DateTime   @default(now())
+
+  questions  Question[]
+}
+
+model ReadingPassage {
+  id        String     @id @default(cuid())
+  title     String
+  content   String     // full passage text
+  createdAt DateTime   @default(now())
+
+  questions Question[]
+}
+
+model Question {
+  id               String           @id @default(cuid())
+  type             QuestionType
+  sessionType      SessionType      // e.g. IELTS_SPEAKING or MOCK_INTERVIEW_TECHNICAL
+  text             String
+  options          String[]       // MCQ options, nullable for open-ended
+  correctAnswer    String?          // for MCQ
+  difficulty       Difficulty       @default(MEDIUM)
+  aiGenerated      Boolean          @default(false)  // Indicates if question was AI-generated
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  listeningAudio   ListeningAudio?  @relation(fields: [listeningAudioId], references: [id])
+  listeningAudioId String?
+
+  readingPassage   ReadingPassage?  @relation(fields: [readingPassageId], references: [id])
+  readingPassageId String?
+
+  answers          Answer[]         // back-relation for Answer.question
+  quizAnswers      QuizAnswer[]     // back-relation for QuizAnswer.question
+}
+
+model Answer {
+  id           String      @id @default(cuid())
+  session      Session     @relation(fields: [sessionId], references: [id])
+  sessionId    String
+  question     Question    @relation(fields: [questionId], references: [id])
+  questionId   String
+  answerText   String?     // user’s text or transcript (for voice)
+  isCorrect    Boolean?    // for MCQ
+  score        Float?      // score given by AI or system (e.g. 0-1 or band score)
+  feedback     Json?       // AI-generated feedback
+  createdAt    DateTime    @default(now())
+
+  @@index([sessionId])
+}
+
+model QuizAttempt {
+  id           String      @id @default(cuid())
+  user         User        @relation(fields: [userId], references: [id])
+  userId       String
+  quizName     String
+  startedAt    DateTime    @default(now())
+  endedAt      DateTime?
+  score        Float?      // percentage
+  feedback     Json?       // AI or system feedback
+  createdAt    DateTime    @default(now())
+
+  quizAnswers  QuizAnswer[]
+}
+
+model QuizAnswer {
+  id           String      @id @default(cuid())
+  quizAttempt  QuizAttempt @relation(fields: [quizAttemptId], references: [id])
+  quizAttemptId String
+  question     Question    @relation(fields: [questionId], references: [id])
+  questionId   String
+  selectedOption String?   // for MCQ
+  answerText   String?     // for open-ended
+  isCorrect    Boolean?
+  score        Float?
+  feedback     Json?
+  createdAt    DateTime    @default(now())
+
+  @@index([quizAttemptId])
+}
+
+model WritingSubmission {
+  id            String      @id @default(cuid())
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  session       Session?    @relation(fields: [sessionId], references: [id])
+  sessionId     String?
+  writingTask   IELTSWritingTask
+  imageUrl      String      // URL of uploaded handwriting image
+  extractedText String?     // OCR result
+  score         Float?      // AI band score
+  feedback      Json?       // detailed AI feedback
+  createdAt     DateTime    @default(now())
+}
+
+model UserProgress {
+  id            String   @id @default(cuid())
+  user          User     @relation(fields: [userId], references: [id])
+  userId        String
+  date          DateTime
+  ieltsScore    Float?
+  interviewScore Float?
+  quizScore     Float?
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, date])
+}
