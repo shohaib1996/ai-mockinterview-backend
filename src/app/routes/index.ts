@@ -12,6 +12,8 @@ import { QuizAttemptRoutes } from '../modules/quizAttempt/quizAttempt.routes';
 import { QuizAnswerRoutes } from '../modules/quizAnswer/quizAnswer.routes';
 import { WritingSubmissionRoutes } from '../modules/writingSubmission/writingSubmission.routes';
 import { UserProgressRoutes } from '../modules/userProgress/userProgress.routes';
+import { FileUploadRoutes } from '../modules/file-upload/file-upload.routes';
+import { TextExtractionRoutes } from '../modules/text-extraction/text-extraction.routes';
 
 const moduleRoutes = [
   {
@@ -53,6 +55,14 @@ const moduleRoutes = [
   {
     path: '/user-progress',
     route: UserProgressRoutes,
+  },
+  {
+    path: '/upload',
+    route: FileUploadRoutes,
+  },
+  {
+    path: '/extract-text',
+    route: TextExtractionRoutes,
   },
 ];
 
