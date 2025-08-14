@@ -11,7 +11,7 @@ import { ApiError } from '@/app/errors/apiError';
 
 const createUser = async (payload: User): Promise<IUser> => {
   try {
-    const { email, password, name, role } = payload;
+    const { email, password, name, role, avatarUrl } = payload;
 
     const isExist = await prisma.user.findFirst({
       where: {
@@ -31,6 +31,7 @@ const createUser = async (payload: User): Promise<IUser> => {
         password: hashedPassword,
         name,
         role,
+        avatarUrl,
       },
     });
 
@@ -68,6 +69,7 @@ const loginUser = async (payload: User): Promise<ILoginUserResponse> => {
       id: user.id,
       email: user.email,
       role: user.role,
+      avatarUrl: user.avatarUrl
     });
 
     return { accessToken };

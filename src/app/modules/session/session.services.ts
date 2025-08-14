@@ -5,10 +5,16 @@ import { ICreateSessionPayload, IUpdateSessionPayload } from './session.interfac
 import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
 
-const createSession = async (payload: ICreateSessionPayload): Promise<Session> => {
+const createSession = async (
+  userId: string,
+  payload: ICreateSessionPayload,
+): Promise<Session> => {
   try {
     const result = await prisma.session.create({
-      data: payload,
+      data: {
+        ...payload,
+        userId,
+      },
     });
     return result;
   } catch (error) {
@@ -19,9 +25,19 @@ const createSession = async (payload: ICreateSessionPayload): Promise<Session> =
   }
 };
 
-const getAllSessions = async (): Promise<Session[]> => {
+const getAllSessions = async () => {
   try {
-    const result = await prisma.session.findMany();
+    const result = await prisma.session.findMany({
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
     return result;
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve sessions');

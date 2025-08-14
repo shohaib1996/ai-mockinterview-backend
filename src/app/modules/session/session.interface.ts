@@ -1,9 +1,9 @@
-import { Session, SessionType, Answer, WritingSubmission } from '@prisma/client';
+import { Session, SessionType } from '@prisma/client';
 
 export type ISession = Session;
 
 export type ICreateSessionPayload = {
-  userId: string;
+  
   type: SessionType;
   startedAt?: Date;
   endedAt?: Date;

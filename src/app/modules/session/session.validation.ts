@@ -3,9 +3,7 @@ import { SessionType } from '@prisma/client';
 
 const createSessionZodSchema = z.object({
   body: z.object({
-    userId: z.string({
-      message: 'User ID is required',
-    }),
+    userId: z.string().optional(),
     type: z.nativeEnum(SessionType, {
       message: 'Session type is required',
     }),

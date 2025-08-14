@@ -5,8 +5,11 @@ import catchAsync from '@/app/utils/catchAsync';
 import { ApiError } from '@/app/errors/apiError';
 
 
+import { User } from '@prisma/client';
+
 const createSessionController = catchAsync(async (req: Request, res: Response) => {
-  const result = await SessionServices.createSession(req.body);
+  const { id: userId } = req.user as User;
+  const result = await SessionServices.createSession(userId, req.body);
   res.status(httpStatus.CREATED).json({
     success: true,
     message: 'Session created successfully',

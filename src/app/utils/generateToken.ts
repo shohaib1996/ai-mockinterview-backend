@@ -5,6 +5,7 @@ interface ITokenPayload {
   id: string;
   email: string;
   role: string;
+  avatarUrl?: string | null;
 }
 
 export const generateToken = (payload: ITokenPayload) => {

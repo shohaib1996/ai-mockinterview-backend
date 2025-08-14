@@ -1,6 +1,6 @@
 import { Prisma, Answer } from '@prisma/client';
 import httpStatus from 'http-status';
-import prisma from '@/app/lib/prisma';
+import prisma from "@/app/lib/prisma"
 import { ApiError } from '@/app/errors/apiError';
 import { ICreateAnswerPayload, IUpdateAnswerPayload } from './answer.interface';
 
