@@ -24,7 +24,26 @@ const loginUserController = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllUsersController = catchAsync(async (req: Request, res: Response) => {
+  const { page, limit, id, name, email } = req.query;
+  const options: { page?: number; limit?: number; id?: string; name?: string; email?: string; } = {};
+
+  if (page) options.page = Number(page);
+  if (limit) options.limit = Number(limit);
+  if (id) options.id = id as string;
+  if (name) options.name = name as string;
+  if (email) options.email = email as string;
+
+  const result = await UserServices.getAllUsers(options);
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: 'Users retrieved successfully',
+    ...result,
+  });
+});
+
 export const UserController = {
   createUserController,
   loginUserController,
+  getAllUsersController,
 };

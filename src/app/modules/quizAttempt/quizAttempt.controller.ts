@@ -14,11 +14,18 @@ const createQuizAttemptController = catchAsync(async (req: Request, res: Respons
 });
 
 const getAllQuizAttemptsController = catchAsync(async (req: Request, res: Response) => {
-  const result = await QuizAttemptServices.getAllQuizAttempts();
+  const { page, limit, userId } = req.query;
+  const options: { page?: number; limit?: number; userId?: string } = {};
+
+  if (page) options.page = Number(page);
+  if (limit) options.limit = Number(limit);
+  if (userId) options.userId = userId as string;
+
+  const result = await QuizAttemptServices.getAllQuizAttempts(options);
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Quiz attempts retrieved successfully',
-    data: result,
+    ...result,
   });
 });
 

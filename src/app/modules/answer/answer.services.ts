@@ -4,8 +4,16 @@ import prisma from "@/app/lib/prisma"
 import { ApiError } from '@/app/errors/apiError';
 import { ICreateAnswerPayload, IUpdateAnswerPayload } from './answer.interface';
 
-const createAnswer = async (payload: ICreateAnswerPayload): Promise<Answer> => {
+const createAnswer = async (
+  payload: ICreateAnswerPayload | ICreateAnswerPayload[],
+): Promise<Answer | Answer[]> => {
   try {
+    if (Array.isArray(payload)) {
+      const result = await prisma.$transaction(
+        payload.map(p => prisma.answer.create({ data: p })),
+      );
+      return result;
+    }
     const result = await prisma.answer.create({
       data: payload,
     });
@@ -18,10 +26,36 @@ const createAnswer = async (payload: ICreateAnswerPayload): Promise<Answer> => {
   }
 };
 
-const getAllAnswers = async (): Promise<Answer[]> => {
+const getAllAnswers = async (options: {
+  page?: number;
+  limit?: number;
+  sessionId?: string;
+}): Promise<{ meta: { page: number; limit: number; total: number }; data: Answer[] }> => {
+  const { page = 1, limit = 10, sessionId } = options;
+  const skip = (page - 1) * limit;
+
   try {
-    const result = await prisma.answer.findMany();
-    return result;
+    const where: Prisma.AnswerWhereInput = {};
+    if (sessionId) {
+      where.sessionId = sessionId;
+    }
+
+    const result = await prisma.answer.findMany({
+      where,
+      skip,
+      take: limit,
+    });
+
+    const total = await prisma.answer.count({ where });
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+      },
+      data: result,
+    };
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve answers');
   }

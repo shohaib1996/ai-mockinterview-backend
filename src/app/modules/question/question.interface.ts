@@ -20,4 +20,6 @@ export type IQuestionFilters = {
   sessionType?: SessionType;
   listeningAudioId?: string;
   readingPassageId?: string;
+  page?: number;
+  limit?: number;
 };

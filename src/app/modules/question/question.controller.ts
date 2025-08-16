@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import { QuestionServices } from './question.services';
 import catchAsync from '@/app/utils/catchAsync';
 import { ApiError } from '@/app/errors/apiError';
+import { SessionType } from '@prisma/client';
 import { IQuestionFilters } from './question.interface';
 
 const createQuestionController = catchAsync(async (req: Request, res: Response) => {
@@ -15,12 +16,20 @@ const createQuestionController = catchAsync(async (req: Request, res: Response) 
 });
 
 const getAllQuestionsController = catchAsync(async (req: Request, res: Response) => {
-  const filters = req.query as IQuestionFilters;
+  const { sessionType, listeningAudioId, readingPassageId, page, limit } = req.query;
+  const filters: IQuestionFilters = {};
+
+  if (page) filters.page = Number(page);
+  if (limit) filters.limit = Number(limit);
+  if (sessionType) filters.sessionType = sessionType as SessionType;
+  if (listeningAudioId) filters.listeningAudioId = listeningAudioId as string;
+  if (readingPassageId) filters.readingPassageId = readingPassageId as string;
+
   const result = await QuestionServices.getAllQuestions(filters);
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Questions retrieved successfully',
-    data: result,
+    ...result,
   });
 });
 

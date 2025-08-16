@@ -14,11 +14,19 @@ const createWritingSubmissionController = catchAsync(async (req: Request, res: R
 });
 
 const getAllWritingSubmissionsController = catchAsync(async (req: Request, res: Response) => {
-  const result = await WritingSubmissionServices.getAllWritingSubmissions();
+  const { page, limit, userId, sessionId } = req.query;
+  const options: { page?: number; limit?: number; userId?: string; sessionId?: string } = {};
+
+  if (page) options.page = Number(page);
+  if (limit) options.limit = Number(limit);
+  if (userId) options.userId = userId as string;
+  if (sessionId) options.sessionId = sessionId as string;
+
+  const result = await WritingSubmissionServices.getAllWritingSubmissions(options);
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Writing submissions retrieved successfully',
-    data: result,
+    ...result,
   });
 });
 

@@ -18,10 +18,45 @@ const createQuizAttempt = async (payload: ICreateQuizAttemptPayload): Promise<Qu
   }
 };
 
-const getAllQuizAttempts = async (): Promise<QuizAttempt[]> => {
+const getAllQuizAttempts = async (options: {
+  page?: number;
+  limit?: number;
+  userId?: string;
+}): Promise<{ meta: { page: number; limit: number; total: number }; data: QuizAttempt[] }> => {
+  const { page = 1, limit = 10, userId } = options;
+  const skip = (page - 1) * limit;
+
   try {
-    const result = await prisma.quizAttempt.findMany();
-    return result;
+    const where: Prisma.QuizAttemptWhereInput = {};
+    if (userId) {
+      where.userId = userId;
+    }
+
+    const result = await prisma.quizAttempt.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+    });
+
+    const total = await prisma.quizAttempt.count({ where });
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+      },
+      data: result,
+    };
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve quiz attempts');
   }

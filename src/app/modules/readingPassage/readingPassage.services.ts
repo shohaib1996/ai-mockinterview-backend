@@ -18,10 +18,29 @@ const createReadingPassage = async (payload: ICreateReadingPassagePayload): Prom
   }
 };
 
-const getAllReadingPassages = async (): Promise<ReadingPassage[]> => {
+const getAllReadingPassages = async (options: {
+  page?: number;
+  limit?: number;
+}): Promise<{ meta: { page: number; limit: number; total: number }; data: ReadingPassage[] }> => {
+  const { page = 1, limit = 10 } = options;
+  const skip = (page - 1) * limit;
+
   try {
-    const result = await prisma.readingPassage.findMany();
-    return result;
+    const result = await prisma.readingPassage.findMany({
+      skip,
+      take: limit,
+    });
+
+    const total = await prisma.readingPassage.count();
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+      },
+      data: result,
+    };
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve reading passages');
   }

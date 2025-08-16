@@ -24,8 +24,12 @@ const createQuestion = async (payload: ICreateQuestionPayload | ICreateQuestionP
   }
 };
 
-const getAllQuestions = async (filters: IQuestionFilters): Promise<Question[]> => {
-  const { sessionType, listeningAudioId, readingPassageId } = filters;
+const getAllQuestions = async (
+  filters: IQuestionFilters
+): Promise<{ meta: { page: number; limit: number; total: number }; data: Question[] }> => {
+  const { sessionType, listeningAudioId, readingPassageId, page = 1, limit = 10 } = filters;
+  const skip = (page - 1) * limit;
+
   const where: Prisma.QuestionWhereInput = {};
 
   if (sessionType) {
@@ -41,8 +45,22 @@ const getAllQuestions = async (filters: IQuestionFilters): Promise<Question[]> =
   }
 
   try {
-    const result = await prisma.question.findMany({ where });
-    return result;
+    const result = await prisma.question.findMany({
+      where,
+      skip,
+      take: limit,
+    });
+
+    const total = await prisma.question.count({ where });
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+      },
+      data: result,
+    };
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve questions');
   }

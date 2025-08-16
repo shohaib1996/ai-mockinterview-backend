@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const createUserSchema = z.object({
+export const createUserZodSchema = z.object({
   body: z.object({
     email: z.string().email(),
     name: z.string().optional(),
@@ -10,9 +10,25 @@ export const createUserSchema = z.object({
   }),
 });
 
-export const loginUserSchema = z.object({
+export const loginUserZodSchema = z.object({
   body: z.object({
     email: z.string().email(),
     password: z.string(),
   }),
 });
+
+export const getAllUsersZodSchema = z.object({
+  query: z.object({
+    page: z.string().optional(),
+    limit: z.string().optional(),
+    id: z.string().optional(),
+    name: z.string().optional(),
+    email: z.string().email().optional(),
+  }),
+});
+
+export const UserValidation = {
+  createUserZodSchema,
+  loginUserZodSchema,
+  getAllUsersZodSchema,
+};

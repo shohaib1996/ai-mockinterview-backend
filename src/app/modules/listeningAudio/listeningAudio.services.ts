@@ -18,10 +18,29 @@ const createListeningAudio = async (payload: ICreateListeningAudioPayload): Prom
   }
 };
 
-const getAllListeningAudios = async (): Promise<ListeningAudio[]> => {
+const getAllListeningAudios = async (options: {
+  page?: number;
+  limit?: number;
+}): Promise<{ meta: { page: number; limit: number; total: number }; data: ListeningAudio[] }> => {
+  const { page = 1, limit = 10 } = options;
+  const skip = (page - 1) * limit;
+
   try {
-    const result = await prisma.listeningAudio.findMany();
-    return result;
+    const result = await prisma.listeningAudio.findMany({
+      skip,
+      take: limit,
+    });
+
+    const total = await prisma.listeningAudio.count();
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+      },
+      data: result,
+    };
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve listening audios');
   }

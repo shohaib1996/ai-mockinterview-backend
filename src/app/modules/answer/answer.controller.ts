@@ -14,11 +14,18 @@ const createAnswerController = catchAsync(async (req: Request, res: Response) =>
 });
 
 const getAllAnswersController = catchAsync(async (req: Request, res: Response) => {
-  const result = await AnswerServices.getAllAnswers();
+  const { page, limit, sessionId } = req.query;
+  const options: { page?: number; limit?: number; sessionId?: string } = {};
+
+  if (page) options.page = Number(page);
+  if (limit) options.limit = Number(limit);
+  if (sessionId) options.sessionId = sessionId as string;
+
+  const result = await AnswerServices.getAllAnswers(options);
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Answers retrieved successfully',
-    data: result,
+    ...result,
   });
 });
 

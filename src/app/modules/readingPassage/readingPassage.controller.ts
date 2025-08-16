@@ -14,11 +14,17 @@ const createReadingPassageController = catchAsync(async (req: Request, res: Resp
 });
 
 const getAllReadingPassagesController = catchAsync(async (req: Request, res: Response) => {
-  const result = await ReadingPassageServices.getAllReadingPassages();
+  const { page, limit } = req.query;
+  const options: { page?: number; limit?: number; } = {};
+
+  if (page) options.page = Number(page);
+  if (limit) options.limit = Number(limit);
+
+  const result = await ReadingPassageServices.getAllReadingPassages(options);
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Reading passages retrieved successfully',
-    data: result,
+    ...result,
   });
 });
 

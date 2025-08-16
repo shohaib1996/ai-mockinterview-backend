@@ -4,8 +4,16 @@ import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
 import { ICreateQuizAnswerPayload, IUpdateQuizAnswerPayload } from './quizAnswer.interface';
 
-const createQuizAnswer = async (payload: ICreateQuizAnswerPayload): Promise<QuizAnswer> => {
+const createQuizAnswer = async (
+  payload: ICreateQuizAnswerPayload | ICreateQuizAnswerPayload[],
+): Promise<QuizAnswer | QuizAnswer[]> => {
   try {
+    if (Array.isArray(payload)) {
+      const result = await prisma.$transaction(
+        payload.map(p => prisma.quizAnswer.create({ data: p })),
+      );
+      return result;
+    }
     const result = await prisma.quizAnswer.create({
       data: payload,
     });
@@ -18,10 +26,36 @@ const createQuizAnswer = async (payload: ICreateQuizAnswerPayload): Promise<Quiz
   }
 };
 
-const getAllQuizAnswers = async (): Promise<QuizAnswer[]> => {
+const getAllQuizAnswers = async (options: {
+  page?: number;
+  limit?: number;
+  quizAttemptId?: string;
+}): Promise<{ meta: { page: number; limit: number; total: number }; data: QuizAnswer[] }> => {
+  const { page = 1, limit = 10, quizAttemptId } = options;
+  const skip = (page - 1) * limit;
+
   try {
-    const result = await prisma.quizAnswer.findMany();
-    return result;
+    const where: Prisma.QuizAnswerWhereInput = {};
+    if (quizAttemptId) {
+      where.quizAttemptId = quizAttemptId;
+    }
+
+    const result = await prisma.quizAnswer.findMany({
+      where,
+      skip,
+      take: limit,
+    });
+
+    const total = await prisma.quizAnswer.count({ where });
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+      },
+      data: result,
+    };
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve quiz answers');
   }

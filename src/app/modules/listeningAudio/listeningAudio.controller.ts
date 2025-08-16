@@ -15,11 +15,17 @@ const createListeningAudioController = catchAsync(async (req: Request, res: Resp
 });
 
 const getAllListeningAudiosController = catchAsync(async (req: Request, res: Response) => {
-  const result = await ListeningAudioServices.getAllListeningAudios();
+  const { page, limit } = req.query;
+  const options: { page?: number; limit?: number; } = {};
+
+  if (page) options.page = Number(page);
+  if (limit) options.limit = Number(limit);
+
+  const result = await ListeningAudioServices.getAllListeningAudios(options);
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Listening audios retrieved successfully',
-    data: result,
+    ...result,
   });
 });
 

@@ -25,9 +25,22 @@ const createSession = async (
   }
 };
 
-const getAllSessions = async () => {
+const getAllSessions = async (options: {
+  page?: number;
+  limit?: number;
+  userId?: string;
+}): Promise<{ meta: { page: number; limit: number; total: number }; data: Session[] }> => {
+  const { page = 1, limit = 10, userId } = options;
+  const skip = (page - 1) * limit;
+
   try {
+    const where: Prisma.SessionWhereInput = {};
+    if (userId) {
+      where.userId = userId;
+    }
+
     const result = await prisma.session.findMany({
+      where,
       include: {
         user: {
           select: {
@@ -37,8 +50,20 @@ const getAllSessions = async () => {
           },
         },
       },
+      skip,
+      take: limit,
     });
-    return result;
+
+    const total = await prisma.session.count({ where });
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+      },
+      data: result,
+    };
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve sessions');
   }

@@ -18,11 +18,18 @@ const createSessionController = catchAsync(async (req: Request, res: Response) =
 });
 
 const getAllSessionsController = catchAsync(async (req: Request, res: Response) => {
-  const result = await SessionServices.getAllSessions();
+  const { page, limit, userId } = req.query;
+  const options: { page?: number; limit?: number; userId?: string } = {};
+
+  if (page) options.page = Number(page);
+  if (limit) options.limit = Number(limit);
+  if (userId) options.userId = userId as string;
+
+  const result = await SessionServices.getAllSessions(options);
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Sessions retrieved successfully',
-    data: result,
+    ...result,
   });
 });
 

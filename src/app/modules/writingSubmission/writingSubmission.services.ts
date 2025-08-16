@@ -18,10 +18,54 @@ const createWritingSubmission = async (payload: ICreateWritingSubmissionPayload)
   }
 };
 
-const getAllWritingSubmissions = async (): Promise<WritingSubmission[]> => {
+const getAllWritingSubmissions = async (options: {
+  page?: number;
+  limit?: number;
+  userId?: string;
+  sessionId?: string;
+}): Promise<{ meta: { page: number; limit: number; total: number }; data: WritingSubmission[] }> => {
+  const { page = 1, limit = 10, userId, sessionId } = options;
+  const skip = (page - 1) * limit;
+
   try {
-    const result = await prisma.writingSubmission.findMany();
-    return result;
+    const where: Prisma.WritingSubmissionWhereInput = {};
+    if (userId) {
+      where.userId = userId;
+    }
+    if (sessionId) {
+      where.sessionId = sessionId;
+    }
+
+    const result = await prisma.writingSubmission.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+        session: {
+          select: {
+            type: true, // This corresponds to sessionType
+          },
+        },
+      },
+      skip,
+      take: limit,
+    });
+
+    const total = await prisma.writingSubmission.count({ where });
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+      },
+      data: result,
+    };
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve writing submissions');
   }

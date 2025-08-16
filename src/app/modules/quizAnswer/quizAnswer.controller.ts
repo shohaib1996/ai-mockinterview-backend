@@ -14,11 +14,18 @@ const createQuizAnswerController = catchAsync(async (req: Request, res: Response
 });
 
 const getAllQuizAnswersController = catchAsync(async (req: Request, res: Response) => {
-  const result = await QuizAnswerServices.getAllQuizAnswers();
+  const { page, limit, quizAttemptId } = req.query;
+  const options: { page?: number; limit?: number; quizAttemptId?: string } = {};
+
+  if (page) options.page = Number(page);
+  if (limit) options.limit = Number(limit);
+  if (quizAttemptId) options.quizAttemptId = quizAttemptId as string;
+
+  const result = await QuizAnswerServices.getAllQuizAnswers(options);
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Quiz answers retrieved successfully',
-    data: result,
+    ...result,
   });
 });
 
