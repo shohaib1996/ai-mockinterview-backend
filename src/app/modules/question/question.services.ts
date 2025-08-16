@@ -1,11 +1,17 @@
-import { Prisma, Question } from '@prisma/client';
+import { Prisma, Question, SessionType } from '@prisma/client';
 import httpStatus from 'http-status';
 import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
-import { ICreateQuestionPayload, IUpdateQuestionPayload } from './question.interface';
+import { ICreateQuestionPayload, IUpdateQuestionPayload, IQuestionFilters } from './question.interface';
 
-const createQuestion = async (payload: ICreateQuestionPayload): Promise<Question> => {
+const createQuestion = async (payload: ICreateQuestionPayload | ICreateQuestionPayload[]): Promise<Question | { count: number }> => {
   try {
+    if (Array.isArray(payload)) {
+      const result = await prisma.question.createMany({
+        data: payload,
+      });
+      return result;
+    }
     const result = await prisma.question.create({
       data: payload,
     });
@@ -14,13 +20,28 @@ const createQuestion = async (payload: ICreateQuestionPayload): Promise<Question
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       // Handle specific Prisma errors if needed
     }
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to create question');
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to create question(s)');
   }
 };
 
-const getAllQuestions = async (): Promise<Question[]> => {
+const getAllQuestions = async (filters: IQuestionFilters): Promise<Question[]> => {
+  const { sessionType, listeningAudioId, readingPassageId } = filters;
+  const where: Prisma.QuestionWhereInput = {};
+
+  if (sessionType) {
+    where.sessionType = sessionType;
+  }
+
+  if (listeningAudioId) {
+    where.listeningAudioId = listeningAudioId;
+  }
+
+  if (readingPassageId) {
+    where.readingPassageId = readingPassageId;
+  }
+
   try {
-    const result = await prisma.question.findMany();
+    const result = await prisma.question.findMany({ where });
     return result;
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve questions');

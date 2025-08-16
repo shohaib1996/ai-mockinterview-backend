@@ -15,3 +15,9 @@ export type ICreateQuestionPayload = {
 };
 
 export type IUpdateQuestionPayload = Partial<ICreateQuestionPayload>;
+
+export type IQuestionFilters = {
+  sessionType?: SessionType;
+  listeningAudioId?: string;
+  readingPassageId?: string;
+};

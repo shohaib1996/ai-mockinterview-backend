@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import { QuestionServices } from './question.services';
 import catchAsync from '@/app/utils/catchAsync';
 import { ApiError } from '@/app/errors/apiError';
+import { IQuestionFilters } from './question.interface';
 
 const createQuestionController = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionServices.createQuestion(req.body);
@@ -14,7 +15,8 @@ const createQuestionController = catchAsync(async (req: Request, res: Response) 
 });
 
 const getAllQuestionsController = catchAsync(async (req: Request, res: Response) => {
-  const result = await QuestionServices.getAllQuestions();
+  const filters = req.query as IQuestionFilters;
+  const result = await QuestionServices.getAllQuestions(filters);
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Questions retrieved successfully',
