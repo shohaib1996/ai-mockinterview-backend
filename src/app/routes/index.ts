@@ -14,8 +14,13 @@ import { WritingSubmissionRoutes } from '../modules/writingSubmission/writingSub
 import { UserProgressRoutes } from '../modules/userProgress/userProgress.routes';
 import { FileUploadRoutes } from '../modules/file-upload/file-upload.routes';
 import { TextExtractionRoutes } from '../modules/text-extraction/text-extraction.routes';
+import { AiChatRoutes } from '../modules/ai-chat/ai-chat.routes';
 
 const moduleRoutes = [
+  {
+    path: '/ai-chat',
+    route: AiChatRoutes,
+  },
   {
     path: '/users',
     route: UserRoutes,

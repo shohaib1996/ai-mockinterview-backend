@@ -28,8 +28,9 @@
     "http-status": "^2.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
+    "openai": "^5.12.2",
     "pg": "^8.16.3",
-    "zod": "^4.0.16"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

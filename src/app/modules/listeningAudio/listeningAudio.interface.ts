@@ -1,4 +1,4 @@
-import { ListeningAudio, Question } from '@prisma/client';
+import { ListeningAudio } from '@prisma/client';
 
 export type IListeningAudio = ListeningAudio;
 
