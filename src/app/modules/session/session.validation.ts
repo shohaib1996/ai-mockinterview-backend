@@ -7,7 +7,7 @@ const createSessionZodSchema = z.object({
     type: z.nativeEnum(SessionType, {
       message: 'Session type is required',
     }),
-    startedAt: z.string().optional(),
+    startedAt: z.string().default(() => new Date().toISOString()),
     endedAt: z.string().optional(),
     score: z.number().optional(),
     transcript: z.string().optional(),

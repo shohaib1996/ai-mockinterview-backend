@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 
 import { IUser } from './users.interface';
 import httpStatus from 'http-status';
@@ -72,7 +72,7 @@ const loginUser = async (payload: User): Promise<ILoginUserResponse> => {
       avatarUrl: user.avatarUrl
     });
 
-    return { accessToken };
+    return {user, accessToken };
   } catch (error) {
     console.log(error);
     throw error;

@@ -15,6 +15,7 @@ import { UserProgressRoutes } from '../modules/userProgress/userProgress.routes'
 import { FileUploadRoutes } from '../modules/file-upload/file-upload.routes';
 import { TextExtractionRoutes } from '../modules/text-extraction/text-extraction.routes';
 import { AiChatRoutes } from '../modules/ai-chat/ai-chat.routes';
+import { UserDashboardRoutes } from '../modules/userDashboard/userDashboard.routes';
 
 const moduleRoutes = [
   {
@@ -68,6 +69,10 @@ const moduleRoutes = [
   {
     path: '/extract-text',
     route: TextExtractionRoutes,
+  },
+  {
+    path: '/dashboard',
+    route: UserDashboardRoutes,
   },
 ];
 
