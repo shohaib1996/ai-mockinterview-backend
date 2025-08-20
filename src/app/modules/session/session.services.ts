@@ -1,4 +1,4 @@
-import { Prisma, Session } from '@prisma/client';
+import { Prisma, Session, SessionType } from '@prisma/client';
 import httpStatus from 'http-status';
 
 import { ICreateSessionPayload, IUpdateSessionPayload } from './session.interface';
@@ -29,14 +29,18 @@ const getAllSessions = async (options: {
   page?: number;
   limit?: number;
   userId?: string;
+  type?: string;
 }): Promise<{ meta: { page: number; limit: number; total: number }; data: Session[] }> => {
-  const { page = 1, limit = 10, userId } = options;
+  const { page = 1, limit = 10, userId, type } = options;
   const skip = (page - 1) * limit;
 
   try {
     const where: Prisma.SessionWhereInput = {};
     if (userId) {
       where.userId = userId;
+    }
+    if (type) {
+      where.type = type as SessionType;
     }
 
     const result = await prisma.session.findMany({
@@ -74,6 +78,10 @@ const getSingleSession = async (id: string): Promise<Session | null> => {
     const result = await prisma.session.findUnique({
       where: {
         id,
+      },
+      include: {
+        aiChatConversations: true,
+        writingSubmissions: true,
       },
     });
     return result;

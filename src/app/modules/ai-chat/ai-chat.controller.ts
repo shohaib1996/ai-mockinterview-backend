@@ -23,7 +23,18 @@ const getConversationBySessionId = catchAsync(async (req: Request, res: Response
   });
 });
 
+const analyzeConversationController = catchAsync(async (req: Request, res: Response) => {
+  const { sessionId } = req.params;
+  const result = await AiChatServices.analyzeConversation(sessionId!);
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: 'Conversation analyzed successfully',
+    data: result,
+  });
+});
+
 export const AiChatController = {
   createChatCompletionController,
   getConversationBySessionId,
+  analyzeConversationController,
 };

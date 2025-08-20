@@ -21,4 +21,10 @@ router.get(
   AiChatController.getConversationBySessionId
 );
 
+router.post(
+  '/analyze/:sessionId',
+  auth([Role.USER, Role.ADMIN]),
+  AiChatController.analyzeConversationController
+);
+
 export const AiChatRoutes = router;

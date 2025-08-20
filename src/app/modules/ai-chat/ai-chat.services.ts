@@ -84,7 +84,72 @@ const getConversationBySessionId = async (sessionId: string) => {
   return Array.isArray(result?.conversation) ? result.conversation : [];
 };
 
+const analyzeConversation = async (sessionId: string) => {
+  try {
+    const rawConversation = await getConversationBySessionId(sessionId);
+
+    if (!rawConversation || rawConversation.length === 0) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Conversation not found for this session');
+    }
+
+    // Type guard to ensure conversation elements are of the expected type
+    const isMessageObject = (item: any): item is { role: string; content: string } => {
+      return typeof item === 'object' && item !== null && 'role' in item && 'content' in item && typeof item.role === 'string' && typeof item.content === 'string';
+    };
+
+    const conversation: Array<{ role: string; content: string }> = rawConversation.filter(isMessageObject);
+
+    if (conversation.length === 0) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'No valid conversation messages found for analysis');
+    }
+
+    const analysisPrompt = `
+      You are an expert IELTS examiner. Analyze the following conversation from an IELTS Speaking Test.
+      Provide a score out of 9 bands for the student's performance, focusing on Fluency and Coherence, Lexical Resource, Grammatical Range and Accuracy, and Pronunciation.
+      Also, provide detailed feedback for improvement and highlight areas of appreciation.
+
+      Conversation:
+      ${conversation.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
+
+      Provide the output in the following JSON format:
+      {
+        "score": <number_out_of_9>,
+        "feedback": "<detailed_feedback_text>"
+      }
+    `;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [{ role: 'user', content: analysisPrompt }],
+      response_format: { type: "json_object" },
+    });
+
+    const aiResponseContent = completion.choices[0]?.message.content;
+
+    if (!aiResponseContent) {
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'AI did not return analysis content');
+    }
+
+    const analysisResult = JSON.parse(aiResponseContent);
+
+    // Update the Session model with the score and feedback
+    await prisma.session.update({
+      where: { id: sessionId },
+      data: {
+        score: analysisResult.score,
+        feedback: analysisResult.feedback,
+      },
+    });
+
+    return analysisResult;
+  } catch (error) {
+    console.error('Error analyzing conversation:', error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to analyze conversation');
+  }
+};
+
 export const AiChatServices = {
   createChatCompletion,
   getConversationBySessionId,
+  analyzeConversation,
 };
