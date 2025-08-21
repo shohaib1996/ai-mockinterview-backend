@@ -1,4 +1,4 @@
-import { Prisma, ListeningAudio } from '@prisma/client';
+import { Prisma, ListeningAudio, UserListeningHistory } from '@prisma/client';
 import httpStatus from 'http-status';
 import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
@@ -21,17 +21,42 @@ const createListeningAudio = async (payload: ICreateListeningAudioPayload): Prom
 const getAllListeningAudios = async (options: {
   page?: number;
   limit?: number;
+  userId?: string; // Add userId to options
 }): Promise<{ meta: { page: number; limit: number; total: number }; data: ListeningAudio[] }> => {
-  const { page = 1, limit = 10 } = options;
+  const { page = 1, limit = 10, userId } = options; // Destructure userId
   const skip = (page - 1) * limit;
 
   try {
+    let where: Prisma.ListeningAudioWhereInput = {};
+
+    if (userId) {
+      // Get IDs of audios completed by the user
+      const completedAudioIds = await prisma.userListeningHistory.findMany({
+        where: {
+          userId: userId,
+        },
+        select: {
+          listeningAudioId: true,
+        },
+      });
+
+      const idsToExclude = completedAudioIds.map((item) => item.listeningAudioId);
+
+      // Add a filter to exclude completed audios
+      where = {
+        id: {
+          notIn: idsToExclude,
+        },
+      };
+    }
+
     const result = await prisma.listeningAudio.findMany({
+      where, // Apply the where clause
       skip,
       take: limit,
     });
 
-    const total = await prisma.listeningAudio.count();
+    const total = await prisma.listeningAudio.count({ where }); // Count with the where clause
 
     return {
       meta: {

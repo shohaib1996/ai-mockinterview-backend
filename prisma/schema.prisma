@@ -55,6 +55,7 @@ model User {
   quizAttempts      QuizAttempt[]
   writingSubmissions WritingSubmission[]
   userProgress      UserProgress[]
+  userListeningHistory UserListeningHistory[]
 }
 
 model Session {
@@ -72,6 +73,7 @@ model Session {
   answers     Answer[]
   writingSubmissions WritingSubmission[]  // back-relation for WritingSubmission.session
   aiChatConversations AIChatConversation[]
+  userListeningHistory UserListeningHistory[]
 
   @@index([userId])
 }
@@ -84,6 +86,7 @@ model ListeningAudio {
   createdAt  DateTime   @default(now())
 
   questions  Question[]
+  userListeningHistory UserListeningHistory[]
 }
 
 model ReadingPassage {
@@ -198,4 +201,17 @@ model AIChatConversation {
   createdAt    DateTime @default(now())
 
   @@index([sessionId])
+}
+
+model UserListeningHistory {
+  id              String        @id @default(cuid())
+  user            User          @relation(fields: [userId], references: [id])
+  userId          String
+  listeningAudio  ListeningAudio @relation(fields: [listeningAudioId], references: [id])
+  listeningAudioId String
+  completedAt     DateTime      @default(now())
+  session         Session?      @relation(fields: [sessionId], references: [id]) // Optional, if you want to link to a specific session
+  sessionId       String?
+
+  @@unique([userId, listeningAudioId]) // A user can complete an audio only once
 }

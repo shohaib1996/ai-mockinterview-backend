@@ -1,4 +1,4 @@
-import { Prisma, Session, SessionType } from '@prisma/client';
+import { Prisma, Session, SessionType, Question, Answer, UserListeningHistory } from '@prisma/client';
 import httpStatus from 'http-status';
 
 import { ICreateSessionPayload, IUpdateSessionPayload } from './session.interface';
@@ -92,16 +92,83 @@ const getSingleSession = async (id: string): Promise<Session | null> => {
 
 const updateSession = async (id: string, payload: IUpdateSessionPayload): Promise<Session> => {
   try {
+    // Fetch the existing session to check its type and userId before update
+    const existingSession = await prisma.session.findUnique({
+      where: { id },
+      select: {
+        userId: true,
+        type: true,
+      },
+    });
+
+    if (!existingSession) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Session not found');
+    }
+
     const result = await prisma.session.update({
       where: {
         id,
       },
       data: payload,
     });
+
+    // If the session is an IELTS_LISTENING session and endedAt is being set
+    if (
+      existingSession.type === SessionType.IELTS_LISTENING &&
+      payload.endedAt !== undefined &&
+      payload.endedAt !== null
+    ) {
+      // Find all questions associated with this session's answers that have a listeningAudioId
+      const questionsWithListeningAudio = await prisma.question.findMany({
+        where: {
+          answers: {
+            some: {
+              sessionId: id,
+            },
+          },
+          listeningAudioId: {
+            not: null,
+          },
+        },
+        select: {
+          listeningAudioId: true,
+        },
+      });
+
+      const uniqueListeningAudioIds = [
+        ...new Set(
+          questionsWithListeningAudio
+            .map((q) => q.listeningAudioId)
+            .filter((id): id is string => id !== null),
+        ),
+      ];
+
+      // Create UserListeningHistory records for each unique listening audio
+      for (const audioId of uniqueListeningAudioIds) {
+        await prisma.userListeningHistory.upsert({
+          where: {
+            userId_listeningAudioId: {
+              userId: existingSession.userId,
+              listeningAudioId: audioId,
+            },
+          },
+          update: {
+            completedAt: new Date(),
+            sessionId: result.id, // Update with the current session ID
+          },
+          create: {
+            userId: existingSession.userId,
+            listeningAudioId: audioId,
+            sessionId: result.id,
+          },
+        });
+      }
+    }
+
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to update not found
+      if (error.code === 'P2025') {
         throw new ApiError(httpStatus.NOT_FOUND, 'Session not found');
       }
     }
