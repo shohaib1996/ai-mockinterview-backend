@@ -1,4 +1,4 @@
-import { Prisma, ListeningAudio, UserListeningHistory } from '@prisma/client';
+import { Prisma, ListeningAudio } from '@prisma/client';
 import httpStatus from 'http-status';
 import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
@@ -31,9 +31,12 @@ const getAllListeningAudios = async (options: {
 
     if (userId) {
       // Get IDs of audios completed by the user
-      const completedAudioIds = await prisma.userListeningHistory.findMany({
+      const completedAudioIds = await prisma.userCompletionHistory.findMany({
         where: {
           userId: userId,
+          listeningAudioId: {
+            not: null,
+          },
         },
         select: {
           listeningAudioId: true,

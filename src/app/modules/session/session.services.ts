@@ -1,4 +1,4 @@
-import { Prisma, Session, SessionType, Question, Answer, UserListeningHistory } from '@prisma/client';
+import { Prisma, Session, SessionType } from '@prisma/client';
 import httpStatus from 'http-status';
 
 import { ICreateSessionPayload, IUpdateSessionPayload } from './session.interface';
@@ -82,7 +82,7 @@ const getSingleSession = async (id: string): Promise<Session | null> => {
       include: {
         aiChatConversations: true,
         writingSubmissions: true,
-        userListeningHistory: true,
+        userCompletionHistory: true,
       },
     });
     return result;
@@ -93,7 +93,6 @@ const getSingleSession = async (id: string): Promise<Session | null> => {
 
 const updateSession = async (id: string, payload: IUpdateSessionPayload): Promise<Session> => {
   try {
-    // Fetch the existing session to check its type and userId before update
     const existingSession = await prisma.session.findUnique({
       where: { id },
       select: {
@@ -113,56 +112,95 @@ const updateSession = async (id: string, payload: IUpdateSessionPayload): Promis
       data: payload,
     });
 
-    // If the session is an IELTS_LISTENING session and endedAt is being set
-    if (
-      existingSession.type === SessionType.IELTS_LISTENING &&
-      payload.endedAt !== undefined &&
-      payload.endedAt !== null
-    ) {
-      // Find all questions associated with this session's answers that have a listeningAudioId
-      const questionsWithListeningAudio = await prisma.question.findMany({
-        where: {
-          answers: {
-            some: {
-              sessionId: id,
-            },
-          },
-          listeningAudioId: {
-            not: null,
-          },
-        },
-        select: {
-          listeningAudioId: true,
-        },
-      });
-
-      const uniqueListeningAudioIds = [
-        ...new Set(
-          questionsWithListeningAudio
-            .map((q) => q.listeningAudioId)
-            .filter((id): id is string => id !== null),
-        ),
-      ];
-
-      // Create UserListeningHistory records for each unique listening audio
-      for (const audioId of uniqueListeningAudioIds) {
-        await prisma.userListeningHistory.upsert({
+    if (payload.endedAt !== undefined && payload.endedAt !== null) {
+      if (existingSession.type === SessionType.IELTS_LISTENING) {
+        const questionsWithListeningAudio = await prisma.question.findMany({
           where: {
-            userId_listeningAudioId: {
-              userId: existingSession.userId,
-              listeningAudioId: audioId,
+            answers: {
+              some: {
+                sessionId: id,
+              },
+            },
+            listeningAudioId: {
+              not: null,
             },
           },
-          update: {
-            completedAt: new Date(),
-            sessionId: result.id, // Update with the current session ID
-          },
-          create: {
-            userId: existingSession.userId,
-            listeningAudioId: audioId,
-            sessionId: result.id,
+          select: {
+            listeningAudioId: true,
           },
         });
+
+        const uniqueListeningAudioIds = [
+          ...new Set(
+            questionsWithListeningAudio
+              .map((q) => q.listeningAudioId)
+              .filter((id): id is string => id !== null),
+          ),
+        ];
+
+        for (const audioId of uniqueListeningAudioIds) {
+          await prisma.userCompletionHistory.upsert({
+            where: {
+              userId_listeningAudioId: {
+                userId: existingSession.userId,
+                listeningAudioId: audioId,
+              },
+            },
+            update: {
+              completedAt: new Date(),
+              sessionId: result.id,
+            },
+            create: {
+              userId: existingSession.userId,
+              listeningAudioId: audioId,
+              sessionId: result.id,
+            },
+          });
+        }
+      } else if (existingSession.type === SessionType.IELTS_READING) {
+        const questionsWithReadingPassage = await prisma.question.findMany({
+          where: {
+            answers: {
+              some: {
+                sessionId: id,
+              },
+            },
+            readingPassageId: {
+              not: null,
+            },
+          },
+          select: {
+            readingPassageId: true,
+          },
+        });
+
+        const uniqueReadingPassageIds = [
+          ...new Set(
+            questionsWithReadingPassage
+              .map((q) => q.readingPassageId)
+              .filter((id): id is string => id !== null),
+          ),
+        ];
+
+        for (const passageId of uniqueReadingPassageIds) {
+          await prisma.userCompletionHistory.upsert({
+            where: {
+              userId_readingPassageId: {
+                userId: existingSession.userId,
+                readingPassageId: passageId,
+              },
+            },
+            update: {
+              completedAt: new Date(),
+              sessionId: result.id,
+            },
+            create: {
+              userId: existingSession.userId,
+              readingPassageId: passageId,
+              sessionId: result.id,
+            },
+          });
+        }
       }
     }
 

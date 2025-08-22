@@ -21,17 +21,43 @@ const createReadingPassage = async (payload: ICreateReadingPassagePayload): Prom
 const getAllReadingPassages = async (options: {
   page?: number;
   limit?: number;
+  userId?: string;
 }): Promise<{ meta: { page: number; limit: number; total: number }; data: ReadingPassage[] }> => {
-  const { page = 1, limit = 10 } = options;
+  const { page = 1, limit = 10, userId } = options;
   const skip = (page - 1) * limit;
 
   try {
+    let where: Prisma.ReadingPassageWhereInput = {};
+
+    if (userId) {
+      const completedPassageIds = await prisma.userCompletionHistory.findMany({
+        where: {
+          userId: userId,
+          readingPassageId: {
+            not: null,
+          },
+        },
+        select: {
+          readingPassageId: true,
+        },
+      });
+
+      const idsToExclude = completedPassageIds.map((item) => item.readingPassageId as string);
+
+      where = {
+        id: {
+          notIn: idsToExclude,
+        },
+      };
+    }
+
     const result = await prisma.readingPassage.findMany({
+      where,
       skip,
       take: limit,
     });
 
-    const total = await prisma.readingPassage.count();
+    const total = await prisma.readingPassage.count({ where });
 
     return {
       meta: {

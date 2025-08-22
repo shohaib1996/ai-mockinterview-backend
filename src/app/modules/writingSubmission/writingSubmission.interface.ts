@@ -1,15 +1,21 @@
-import { WritingSubmission, IELTSWritingTask } from '@prisma/client';
+import { WritingSubmission } from '@prisma/client';
 
 export type IWritingSubmission = WritingSubmission;
 
 export type ICreateWritingSubmissionPayload = {
   userId: string;
-  sessionId?: string;
-  writingTask: IELTSWritingTask;
-  imageUrl: string;
-  extractedText?: string;
-  score?: number;
-  feedback?: any; // Prisma's Json type maps to 'any' in TypeScript
+  sessionId: string | null;
+  writingTaskId: string;
+  extractedText: string | null;
+  score: number | null;
+  feedback: any | null; // Prisma's Json type maps to 'any' in TypeScript
 };
 
 export type IUpdateWritingSubmissionPayload = Partial<ICreateWritingSubmissionPayload>;
+
+export type IWritingSubmissionFilters = {
+  userId?: string;
+  sessionId?: string;
+  page?: number;
+  limit?: number;
+};

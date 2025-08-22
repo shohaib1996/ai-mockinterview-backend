@@ -16,6 +16,7 @@ import { FileUploadRoutes } from '../modules/file-upload/file-upload.routes';
 import { TextExtractionRoutes } from '../modules/text-extraction/text-extraction.routes';
 import { AiChatRoutes } from '../modules/ai-chat/ai-chat.routes';
 import { UserDashboardRoutes } from '../modules/userDashboard/userDashboard.routes';
+import { WritingTaskRoutes } from '../modules/writingTask/writingTask.routes';
 
 const moduleRoutes = [
   {
@@ -73,6 +74,10 @@ const moduleRoutes = [
   {
     path: '/dashboard',
     route: UserDashboardRoutes,
+  },
+  {
+    path: '/writing-tasks',
+    route: WritingTaskRoutes,
   },
 ];
 
