@@ -82,6 +82,7 @@ const getSingleSession = async (id: string): Promise<Session | null> => {
       include: {
         aiChatConversations: true,
         writingSubmissions: true,
+        userListeningHistory: true,
       },
     });
     return result;
