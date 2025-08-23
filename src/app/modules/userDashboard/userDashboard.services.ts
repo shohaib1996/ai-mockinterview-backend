@@ -1,46 +1,65 @@
-import { Prisma, PrismaClient, SessionType, Difficulty, IELTSWritingTask } from '@prisma/client';
+import { Prisma, PrismaClient, SessionType, Difficulty, IELTSWritingTaskType } from '@prisma/client';
 import moment from 'moment';
 
 const prisma = new PrismaClient();
 
 const getUserDashboardData = async (userId: string) => {
+  console.log('Fetching dashboard data for userId:', userId);
+
   // 1. Stats
   const sessions = await prisma.session.findMany({ where: { userId } });
+  console.log('Raw sessions:', sessions);
+
   const writingSubmissions = await prisma.writingSubmission.findMany({ where: { userId } });
+  console.log('Raw writingSubmissions:', writingSubmissions);
+
   const quizAttempts = await prisma.quizAttempt.findMany({ where: { userId } });
+  console.log('Raw quizAttempts:', quizAttempts);
+
   const quizAnswers = await prisma.quizAnswer.findMany({ where: { quizAttempt: { userId } } });
+  console.log('Raw quizAnswers:', quizAnswers);
 
   // Calculate average scores with cached filtered arrays
   const listeningSessions = sessions.filter(
     s => s.type === SessionType.IELTS_LISTENING && s.score !== null
   );
+  console.log('Filtered listeningSessions:', listeningSessions);
   const avgListeningScore = listeningSessions.length > 0
     ? listeningSessions.reduce((acc, s) => acc + (s.score ?? 0), 0) / listeningSessions.length
     : 0;
+  console.log('avgListeningScore:', avgListeningScore);
 
   const readingSessions = sessions.filter(
     s => s.type === SessionType.IELTS_READING && s.score !== null
   );
+  console.log('Filtered readingSessions:', readingSessions);
   const avgReadingScore = readingSessions.length > 0
     ? readingSessions.reduce((acc, s) => acc + (s.score ?? 0), 0) / readingSessions.length
     : 0;
+  console.log('avgReadingScore:', avgReadingScore);
 
   const speakingSessions = sessions.filter(
     s => s.type === SessionType.IELTS_SPEAKING && s.score !== null
   );
+  console.log('Filtered speakingSessions:', speakingSessions);
   const avgSpeakingScore = speakingSessions.length > 0
     ? speakingSessions.reduce((acc, s) => acc + (s.score ?? 0), 0) / speakingSessions.length
     : 0;
+  console.log('avgSpeakingScore:', avgSpeakingScore);
 
   const writingSubmissionsWithScore = writingSubmissions.filter(s => s.score !== null);
+  console.log('Filtered writingSubmissionsWithScore:', writingSubmissionsWithScore);
   const avgWritingScore = writingSubmissionsWithScore.length > 0
     ? writingSubmissionsWithScore.reduce((acc, s) => acc + (s.score ?? 0), 0) / writingSubmissionsWithScore.length
     : 0;
+  console.log('avgWritingScore:', avgWritingScore);
 
   const mockSessions = sessions.filter(s => s.type.startsWith('MOCK') && s.score !== null);
+  console.log('Filtered mockSessions:', mockSessions);
   const avgMockInterviewScore = mockSessions.length > 0
     ? mockSessions.reduce((acc, s) => acc + (s.score ?? 0), 0) / mockSessions.length
     : 0;
+  console.log('avgMockInterviewScore:', avgMockInterviewScore);
 
   const latestUserProgress = await prisma.userProgress.findFirst({ where: { userId }, orderBy: { date: 'desc' } });
 
@@ -136,7 +155,8 @@ const getUserDashboardData = async (userId: string) => {
           id: string;
           userId: string;
           sessionId: string | null;
-          writingTask: IELTSWritingTask;
+          writingTaskId: string
+          writingTask: IELTSWritingTaskType;
           imageUrl: string;
           extractedText: string | null;
           score: number;

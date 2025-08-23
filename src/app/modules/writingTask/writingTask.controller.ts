@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import { WritingTaskServices } from './writingTask.services';
 import catchAsync from '@/app/utils/catchAsync';
 import { ApiError } from '@/app/errors/apiError';
+import { Difficulty, IELTSWritingTaskType } from '@prisma/client';
 
 const createWritingTaskController = catchAsync(async (req: Request, res: Response) => {
   const result = await WritingTaskServices.createWritingTask(req.body);
@@ -15,12 +16,12 @@ const createWritingTaskController = catchAsync(async (req: Request, res: Respons
 
 const getAllWritingTasksController = catchAsync(async (req: Request, res: Response) => {
   const { page, limit, task, difficulty } = req.query;
-  const options: { page?: number; limit?: number; task?: string; difficulty?: string } = {};
+  const options: { page?: number; limit?: number; task?: IELTSWritingTaskType; difficulty?: Difficulty } = {};
 
   if (page) options.page = Number(page);
   if (limit) options.limit = Number(limit);
-  if (task) options.task = task as string;
-  if (difficulty) options.difficulty = difficulty as string;
+  if (task) options.task = task as IELTSWritingTaskType;
+  if (difficulty) options.difficulty = difficulty as Difficulty;
 
   const result = await WritingTaskServices.getAllWritingTasks(options);
   res.status(httpStatus.OK).json({
@@ -38,7 +39,7 @@ const getSingleWritingTaskController = catchAsync(async (req: Request, res: Resp
   const result = await WritingTaskServices.getSingleWritingTask(id as string);
 
   if (!result) {
-    throw new new ApiError(httpStatus.NOT_FOUND, 'Writing task not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Writing task not found');
   }
 
   res.status(httpStatus.OK).json({
