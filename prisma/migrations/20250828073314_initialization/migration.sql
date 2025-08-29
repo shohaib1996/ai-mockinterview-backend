@@ -1,37 +1,31 @@
-/*
-  Warnings:
-
-  - The primary key for the `User` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - Added the required column `passwordHash` to the `User` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `updatedAt` to the `User` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- CreateEnum
 CREATE TYPE "public"."Role" AS ENUM ('USER', 'ADMIN');
 
 -- CreateEnum
-CREATE TYPE "public"."SessionType" AS ENUM ('IELTS_LISTENING', 'IELTS_READING', 'IELTS_WRITING', 'IELTS_SPEAKING', 'MOCK_INTERVIEW_TECHNICAL', 'MOCK_INTERVIEW_BEHAVIORAL', 'MOCK_INTERVIEW_INTERPERSONAL', 'QUIZ');
+CREATE TYPE "public"."SessionType" AS ENUM ('IELTS_LISTENING', 'IELTS_READING', 'IELTS_SPEAKING', 'IELTS_WRITING', 'MOCK_INTERVIEW_TECHNICAL', 'MOCK_INTERVIEW_BEHAVIORAL', 'MOCK_INTERVIEW_INTERPERSONAL', 'QUIZ');
 
 -- CreateEnum
 CREATE TYPE "public"."QuestionType" AS ENUM ('MCQ', 'OPEN_ENDED');
 
 -- CreateEnum
-CREATE TYPE "public"."IELTSWritingTask" AS ENUM ('TASK1', 'TASK2');
+CREATE TYPE "public"."IELTSWritingTaskType" AS ENUM ('TASK1', 'TASK2');
 
 -- CreateEnum
 CREATE TYPE "public"."Difficulty" AS ENUM ('LOW', 'MEDIUM', 'HIGH');
 
--- AlterTable
-ALTER TABLE "public"."User" DROP CONSTRAINT "User_pkey",
-ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN     "passwordHash" TEXT NOT NULL,
-ADD COLUMN     "role" "public"."Role" NOT NULL DEFAULT 'USER',
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL,
-ALTER COLUMN "id" DROP DEFAULT,
-ALTER COLUMN "id" SET DATA TYPE TEXT,
-ALTER COLUMN "name" DROP NOT NULL,
-ADD CONSTRAINT "User_pkey" PRIMARY KEY ("id");
-DROP SEQUENCE "User_id_seq";
+-- CreateTable
+CREATE TABLE "public"."User" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "name" TEXT,
+    "password" TEXT NOT NULL,
+    "avatarUrl" TEXT,
+    "role" "public"."Role" NOT NULL DEFAULT 'USER',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "public"."Session" (
@@ -130,12 +124,22 @@ CREATE TABLE "public"."QuizAnswer" (
 );
 
 -- CreateTable
+CREATE TABLE "public"."WritingTask" (
+    "id" TEXT NOT NULL,
+    "task" "public"."IELTSWritingTaskType" NOT NULL,
+    "promptText" TEXT NOT NULL,
+    "imageUrl" TEXT,
+    "difficulty" "public"."Difficulty",
+
+    CONSTRAINT "WritingTask_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "public"."WritingSubmission" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "sessionId" TEXT,
-    "writingTask" "public"."IELTSWritingTask" NOT NULL,
-    "imageUrl" TEXT NOT NULL,
+    "writingTaskId" TEXT NOT NULL,
     "extractedText" TEXT,
     "score" DOUBLE PRECISION,
     "feedback" JSONB,
@@ -157,6 +161,31 @@ CREATE TABLE "public"."UserProgress" (
     CONSTRAINT "UserProgress_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "public"."AIChatConversation" (
+    "id" TEXT NOT NULL,
+    "sessionId" TEXT NOT NULL,
+    "conversation" JSONB NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AIChatConversation_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."UserCompletionHistory" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "listeningAudioId" TEXT,
+    "readingPassageId" TEXT,
+    "completedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "sessionId" TEXT,
+
+    CONSTRAINT "UserCompletionHistory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
+
 -- CreateIndex
 CREATE INDEX "Session_userId_idx" ON "public"."Session"("userId");
 
@@ -168,6 +197,15 @@ CREATE INDEX "QuizAnswer_quizAttemptId_idx" ON "public"."QuizAnswer"("quizAttemp
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserProgress_userId_date_key" ON "public"."UserProgress"("userId", "date");
+
+-- CreateIndex
+CREATE INDEX "AIChatConversation_sessionId_idx" ON "public"."AIChatConversation"("sessionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserCompletionHistory_userId_listeningAudioId_key" ON "public"."UserCompletionHistory"("userId", "listeningAudioId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserCompletionHistory_userId_readingPassageId_key" ON "public"."UserCompletionHistory"("userId", "readingPassageId");
 
 -- AddForeignKey
 ALTER TABLE "public"."Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -200,4 +238,22 @@ ALTER TABLE "public"."WritingSubmission" ADD CONSTRAINT "WritingSubmission_userI
 ALTER TABLE "public"."WritingSubmission" ADD CONSTRAINT "WritingSubmission_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "public"."Session"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "public"."WritingSubmission" ADD CONSTRAINT "WritingSubmission_writingTaskId_fkey" FOREIGN KEY ("writingTaskId") REFERENCES "public"."WritingTask"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "public"."UserProgress" ADD CONSTRAINT "UserProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."AIChatConversation" ADD CONSTRAINT "AIChatConversation_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "public"."Session"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."UserCompletionHistory" ADD CONSTRAINT "UserCompletionHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."UserCompletionHistory" ADD CONSTRAINT "UserCompletionHistory_listeningAudioId_fkey" FOREIGN KEY ("listeningAudioId") REFERENCES "public"."ListeningAudio"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."UserCompletionHistory" ADD CONSTRAINT "UserCompletionHistory_readingPassageId_fkey" FOREIGN KEY ("readingPassageId") REFERENCES "public"."ReadingPassage"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."UserCompletionHistory" ADD CONSTRAINT "UserCompletionHistory_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "public"."Session"("id") ON DELETE SET NULL ON UPDATE CASCADE;

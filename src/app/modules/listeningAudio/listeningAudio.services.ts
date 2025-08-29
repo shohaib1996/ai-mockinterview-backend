@@ -43,7 +43,9 @@ const getAllListeningAudios = async (options: {
         },
       });
 
-      const idsToExclude = completedAudioIds.map((item) => item.listeningAudioId);
+      const idsToExclude = completedAudioIds
+        .map((item) => item.listeningAudioId)
+        .filter((id): id is string => id !== null);
 
       // Add a filter to exclude completed audios
       where = {
