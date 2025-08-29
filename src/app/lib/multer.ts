@@ -53,6 +53,23 @@ export const uploadAudio = multer({
   },
 });
 
+const csvFileFilter = (req: any, file: any, cb: any) => {
+  if (file.mimetype === 'text/csv') {
+    cb(null, true);
+  } else {
+    cb(new ApiError(httpStatus.BAD_REQUEST, 'Only CSV files are allowed!'), false);
+  }
+};
+
+export const uploadCsv = multer({
+  storage: storage,
+  fileFilter: csvFileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+});
+
+
 export const uploadToCloudinary = (file: any) => {
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream({ resource_type: 'auto' }, (error, result) => {

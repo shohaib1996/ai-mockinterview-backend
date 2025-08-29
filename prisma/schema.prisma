@@ -69,6 +69,7 @@ model Session {
   writingSubmissions    WritingSubmission[]
   aiChatConversations   AIChatConversation[]
   userCompletionHistory UserCompletionHistory[]
+  customQuestions       CustomQuestion[]
 
   @@index([userId])
 }
@@ -197,6 +198,16 @@ model AIChatConversation {
   sessionId    String
   conversation Json
   createdAt    DateTime @default(now())
+
+  @@index([sessionId])
+}
+
+model CustomQuestion {
+  id        String  @id @default(cuid())
+  text      String
+  sessionId String
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  asked     Boolean @default(false)
 
   @@index([sessionId])
 }
