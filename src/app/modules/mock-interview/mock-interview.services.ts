@@ -40,20 +40,6 @@ const uploadQuestions = async (sessionId: string, file: Express.Multer.File) => 
 
 const getSystemPrompt = async (sessionType: SessionType, sessionId: string): Promise<ChatCompletionMessageParam> => {
     let content = '';
-    switch (sessionType) {
-        case SessionType.MOCK_INTERVIEW_BEHAVIORAL:
-            content = 'You are a behavioral interviewer. Ask questions that probe into past behaviors and experiences to predict future performance. Use the STAR method (Situation, Task, Action, Result) as a framework for your questions. Please ask question one by one. Not too many question at a time';
-            break;
-        case SessionType.MOCK_INTERVIEW_TECHNICAL:
-            content = "You are a technical interviewer. Your role is to assess the candidate's technical knowledge and problem-solving skills. Ask relevant technical questions. The technical questions would be from (HTML, CSS, JavaScript, React, Next.js, Node.js, Express, PostgreSQL, MongoDB, Mongoose, Prisma). All the question would be Web development related. Please ask question one by one. Not too many question at a time";
-            break;
-        case SessionType.MOCK_INTERVIEW_INTERPERSONAL:
-            content = "You are an interviewer assessing interpersonal skills. Ask questions that reveal a candidate's ability to communicate, collaborate, and build relationships with others. Please ask question one by one. Not too many question at a time";
-            break;
-        default:
-            content = 'You are a general interviewer.';
-            break;
-    }
 
     const nextQuestion = await prisma.customQuestion.findFirst({
         where: {
@@ -66,7 +52,7 @@ const getSystemPrompt = async (sessionType: SessionType, sessionId: string): Pro
     });
 
     if (nextQuestion) {
-        content += `\n\nYour next question to ask is: "${nextQuestion.text}"`;
+        content = `Your next question to ask is: "${nextQuestion.text}"`;
         await prisma.customQuestion.update({
             where: {
                 id: nextQuestion.id,
@@ -78,7 +64,23 @@ const getSystemPrompt = async (sessionType: SessionType, sessionId: string): Pro
     } else {
         const customQuestions = await prisma.customQuestion.findMany({ where: { sessionId } });
         if (customQuestions.length > 0) {
-            content += '\n\nYou have asked all the custom questions. Now, continue the interview with relevant follow-up questions or conclude the interview.';
+            content = 'You have asked all the custom questions. The interview is now complete. Please do not ask any further questions.';
+        } else {
+            // If no custom questions were ever uploaded, use the default system prompt
+            switch (sessionType) {
+                case SessionType.MOCK_INTERVIEW_BEHAVIORAL:
+                    content = 'You are a behavioral interviewer. Ask questions that probe into past behaviors and experiences to predict future performance. Use the STAR method (Situation, Task, Action, Result) as a framework for your questions. Please ask question one by one. Not too many question at a time';
+                    break;
+                case SessionType.MOCK_INTERVIEW_TECHNICAL:
+                    content = "You are a technical interviewer. Your role is to assess the candidate's technical knowledge and problem-solving skills. Ask relevant technical questions. The technical questions would be from (HTML, CSS, JavaScript, React, Next.js, Node.js, Express, PostgreSQL, MongoDB, Mongoose, Prisma). All the question would be Web development related. Please ask question one by one. Not too many question at a time";
+                    break;
+                case SessionType.MOCK_INTERVIEW_INTERPERSONAL:
+                    content = "You are an interviewer assessing interpersonal skills. Ask questions that reveal a candidate's ability to communicate, collaborate, and build relationships with others. Please ask question one by one. Not too many question at a time";
+                    break;
+                default:
+                    content = 'You are a general interviewer.';
+                    break;
+            }
         }
     }
 
@@ -115,20 +117,14 @@ const chat = async (sessionId: string, conversation: IConversationMessage[]) => 
 
     const aiResponse = completion.choices[0]?.message.content ?? '';
 
-    const existingSession = await prisma.aIChatConversation.findFirst({
-        where: { sessionId },
-        orderBy: { createdAt: 'desc' },
-    });
-
-    const existingConv = Array.isArray(existingSession?.conversation)
-      ? existingSession.conversation
-      : [];
-
     const updatedConversation = [
-        ...existingConv,
         ...conversation,
         { role: 'assistant', content: aiResponse },
     ];
+
+    const existingSession = await prisma.aIChatConversation.findFirst({
+        where: { sessionId },
+    });
 
     if (existingSession) {
         await prisma.aIChatConversation.update({
