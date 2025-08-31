@@ -12,6 +12,7 @@ export type ICreateQuestionPayload = {
   aiGenerated?: boolean;
   listeningAudioId?: string;
   readingPassageId?: string;
+  quizAttemptId?: string;
 };
 
 export type IUpdateQuestionPayload = Partial<ICreateQuestionPayload>;
@@ -22,4 +23,5 @@ export type IQuestionFilters = {
   readingPassageId?: string;
   page?: number;
   limit?: number;
+  quizAttemptId?: string
 };

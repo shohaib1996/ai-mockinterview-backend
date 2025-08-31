@@ -2,13 +2,10 @@ import { z } from 'zod';
 
 const createQuizAttemptZodSchema = z.object({
   body: z.object({
-    userId: z.string({
-      message: 'User ID is required',
-    }),
     quizName: z.string({
       message: 'Quiz name is required',
     }),
-    startedAt: z.string().optional(),
+    startedAt: z.string().default(new Date().toISOString()),
     endedAt: z.string().optional(),
     score: z.number().optional(),
     feedback: z.any().optional(),

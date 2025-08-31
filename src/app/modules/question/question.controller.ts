@@ -16,7 +16,7 @@ const createQuestionController = catchAsync(async (req: Request, res: Response) 
 });
 
 const getAllQuestionsController = catchAsync(async (req: Request, res: Response) => {
-  const { sessionType, listeningAudioId, readingPassageId, page, limit } = req.query;
+  const { sessionType, listeningAudioId, readingPassageId, quizAttemptId, page, limit } = req.query;
   const filters: IQuestionFilters = {};
 
   if (page) filters.page = Number(page);
@@ -24,6 +24,7 @@ const getAllQuestionsController = catchAsync(async (req: Request, res: Response)
   if (sessionType) filters.sessionType = sessionType as SessionType;
   if (listeningAudioId) filters.listeningAudioId = listeningAudioId as string;
   if (readingPassageId) filters.readingPassageId = readingPassageId as string;
+  if (quizAttemptId) filters.quizAttemptId = quizAttemptId as string;
 
   const result = await QuestionServices.getAllQuestions(filters);
   res.status(httpStatus.OK).json({
@@ -77,10 +78,21 @@ const deleteQuestionController = catchAsync(async (req: Request, res: Response) 
   });
 });
 
+const generateQuestionsController = catchAsync(async (req: Request, res: Response) => {
+  const { promptText, numberOfQuestions, sessionType, listeningAudioId, readingPassageId, quizAttemptId } = req.body;
+  const generatedQuestions = await QuestionServices.generateQuestions(promptText, numberOfQuestions, sessionType, listeningAudioId, readingPassageId, quizAttemptId);
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: 'Questions generated successfully',
+    data: generatedQuestions,
+  });
+});
+
 export const QuestionController = {
   createQuestionController,
   getAllQuestionsController,
   getSingleQuestionController,
   updateQuestionController,
   deleteQuestionController,
+  generateQuestionsController,
 };

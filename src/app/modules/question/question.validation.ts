@@ -17,6 +17,7 @@ const questionObjectSchema = z.object({
   aiGenerated: z.boolean().optional(),
   listeningAudioId: z.string().optional(),
   readingPassageId: z.string().optional(),
+  quizAttemptId: z.string().optional(),
 });
 
 const createQuestionZodSchema = z.object({
@@ -34,10 +35,21 @@ const updateQuestionZodSchema = z.object({
     aiGenerated: z.boolean().optional(),
     listeningAudioId: z.string().optional(),
     readingPassageId: z.string().optional(),
+    quizAttemptId: z.string().optional(),
+  }),
+});
+
+const generateQuestionsZodSchema = z.object({
+  body: z.object({
+    promptText: z.string({
+      required_error: 'Prompt text is required',
+    }),
+    numberOfQuestions: z.number().int().min(1).max(10, 'Cannot generate more than 10 questions'),
   }),
 });
 
 export const QuestionValidation = {
   createQuestionZodSchema,
   updateQuestionZodSchema,
+  generateQuestionsZodSchema,
 };

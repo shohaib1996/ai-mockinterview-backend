@@ -108,6 +108,8 @@ model Question {
   listeningAudioId String?
   readingPassage   ReadingPassage?  @relation(fields: [readingPassageId], references: [id])
   readingPassageId String?
+  quizAttempt      QuizAttempt?     @relation(fields: [quizAttemptId], references: [id])
+  quizAttemptId    String?
   answers          Answer[]
   quizAnswers      QuizAnswer[]
 }
@@ -138,6 +140,7 @@ model QuizAttempt {
   feedback     Json?
   createdAt    DateTime    @default(now())
   quizAnswers  QuizAnswer[]
+  questions    Question[]
 }
 
 model QuizAnswer {

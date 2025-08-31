@@ -68,6 +68,13 @@ const getSingleQuizAttempt = async (id: string): Promise<QuizAttempt | null> => 
       where: {
         id,
       },
+      include: {
+        quizAnswers: {
+          include: {
+            question: true, // Include the related Question for each QuizAnswer
+          },
+        },
+      },
     });
     return result;
   } catch (error) {

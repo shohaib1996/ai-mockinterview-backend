@@ -39,4 +39,11 @@ router.delete(
   QuestionController.deleteQuestionController
 );
 
+router.post(
+  '/generate',
+  auth([Role.ADMIN, Role.USER]), // Only ADMIN can generate questions
+  validateRequest(QuestionValidation.generateQuestionsZodSchema),
+  QuestionController.generateQuestionsController
+);
+
 export const QuestionRoutes = router;

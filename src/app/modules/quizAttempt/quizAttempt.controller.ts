@@ -3,9 +3,12 @@ import httpStatus from 'http-status';
 import { QuizAttemptServices } from './quizAttempt.services';
 import catchAsync from '@/app/utils/catchAsync';
 import { ApiError } from '@/app/errors/apiError';
+import { User } from '@prisma/client';
 
 const createQuizAttemptController = catchAsync(async (req: Request, res: Response) => {
-  const result = await QuizAttemptServices.createQuizAttempt(req.body);
+  const { id: userId } = req.user as User;
+  const payload = { userId, ...req.body };
+  const result = await QuizAttemptServices.createQuizAttempt(payload);
   res.status(httpStatus.CREATED).json({
     success: true,
     message: 'Quiz attempt created successfully',
