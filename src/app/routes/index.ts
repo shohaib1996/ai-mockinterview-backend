@@ -18,6 +18,7 @@ import { AiChatRoutes } from '../modules/ai-chat/ai-chat.routes';
 import { MockInterviewRoutes } from '../modules/mock-interview/mock-interview.routes';
 import { UserDashboardRoutes } from '../modules/userDashboard/userDashboard.routes';
 import { WritingTaskRoutes } from '../modules/writingTask/writingTask.routes';
+import { AdminDashboardRoutes } from '../modules/adminDashboard/adminDashboard.routes';
 
 const moduleRoutes = [
   {
@@ -79,6 +80,10 @@ const moduleRoutes = [
   {
     path: '/dashboard',
     route: UserDashboardRoutes,
+  },
+  {
+    path: '/admin-dashboard',
+    route: AdminDashboardRoutes,
   },
   {
     path: '/writing-tasks',
