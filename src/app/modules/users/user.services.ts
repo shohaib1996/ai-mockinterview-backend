@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { Prisma, User } from '@prisma/client';
+import { Prisma, User, Role } from '@prisma/client';
 
 import { IUser } from './users.interface';
 import httpStatus from 'http-status';
@@ -102,10 +102,7 @@ const getAllUsers = async (options: {
       };
     }
     if (email) {
-      where.email = {
-        contains: email,
-        mode: 'insensitive',
-      };
+      where.email = email;
     }
 
     const result = await prisma.user.findMany({
@@ -138,8 +135,39 @@ const getAllUsers = async (options: {
   }
 };
 
+const changeUserRole = async (userId: string, newRole: Role): Promise<IUser> => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        role: newRole,
+      },
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = updatedUser;
+
+    return userWithoutPassword;
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to change user role');
+  }
+};
+
 export const UserServices = {
   createUser,
   loginUser,
   getAllUsers,
+  changeUserRole,
 };

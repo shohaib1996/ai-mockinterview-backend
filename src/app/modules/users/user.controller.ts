@@ -26,7 +26,7 @@ const loginUserController = catchAsync(async (req: Request, res: Response) => {
 
 const getAllUsersController = catchAsync(async (req: Request, res: Response) => {
   const { page, limit, id, name, email } = req.query;
-  const options: { page?: number; limit?: number; id?: string; name?: string; email?: string; } = {};
+  const options: { page?: number; limit?: number; id?: string; name?: string; email?: string } = {};
 
   if (page) options.page = Number(page);
   if (limit) options.limit = Number(limit);
@@ -42,8 +42,26 @@ const getAllUsersController = catchAsync(async (req: Request, res: Response) => 
   });
 });
 
+const changeUserRoleController = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { role } = req.body;
+
+  if (!id) {
+    return; 
+  }
+
+  const result = await UserServices.changeUserRole(id, role);
+
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: 'User role updated successfully',
+    data: result,
+  });
+});
+
 export const UserController = {
   createUserController,
   loginUserController,
   getAllUsersController,
+  changeUserRoleController,
 };
