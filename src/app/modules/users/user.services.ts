@@ -35,7 +35,6 @@ const createUser = async (payload: User): Promise<IUser> => {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = newUser;
 
     return userWithoutPassword;
@@ -69,10 +68,10 @@ const loginUser = async (payload: User): Promise<ILoginUserResponse> => {
       id: user.id,
       email: user.email,
       role: user.role,
-      avatarUrl: user.avatarUrl
+      avatarUrl: user.avatarUrl,
     });
 
-    return {user, accessToken };
+    return { user, accessToken };
   } catch (error) {
     console.log(error);
     throw error;
@@ -156,7 +155,6 @@ const changeUserRole = async (userId: string, newRole: Role): Promise<IUser> => 
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = updatedUser;
 
     return userWithoutPassword;

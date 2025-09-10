@@ -11,20 +11,20 @@ router.post(
   '/ielts-speaking-mock',
   auth([Role.USER, Role.ADMIN]),
   validateRequest(AiChatValidation.createChatCompletionZodSchema),
-  AiChatController.createChatCompletionController
+  AiChatController.createChatCompletionController,
 );
 
 router.get(
   '/:sessionId',
   auth([Role.USER, Role.ADMIN]),
   validateRequest(AiChatValidation.getConversationBySessionIdZodSchema),
-  AiChatController.getConversationBySessionId
+  AiChatController.getConversationBySessionId,
 );
 
 router.post(
   '/analyze/:sessionId',
   auth([Role.USER, Role.ADMIN]),
-  AiChatController.analyzeConversationController
+  AiChatController.analyzeConversationController,
 );
 
 export const AiChatRoutes = router;

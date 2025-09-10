@@ -79,8 +79,22 @@ const deleteQuestionController = catchAsync(async (req: Request, res: Response) 
 });
 
 const generateQuestionsController = catchAsync(async (req: Request, res: Response) => {
-  const { promptText, numberOfQuestions, sessionType, listeningAudioId, readingPassageId, quizAttemptId } = req.body;
-  const generatedQuestions = await QuestionServices.generateQuestions(promptText, numberOfQuestions, sessionType, listeningAudioId, readingPassageId, quizAttemptId);
+  const {
+    promptText,
+    numberOfQuestions,
+    sessionType,
+    listeningAudioId,
+    readingPassageId,
+    quizAttemptId,
+  } = req.body;
+  const generatedQuestions = await QuestionServices.generateQuestions(
+    promptText,
+    numberOfQuestions,
+    sessionType,
+    listeningAudioId,
+    readingPassageId,
+    quizAttemptId,
+  );
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Questions generated successfully',

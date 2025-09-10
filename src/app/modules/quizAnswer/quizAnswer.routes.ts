@@ -11,32 +11,32 @@ router.post(
   '/',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can create
   validateRequest(QuizAnswerValidation.createQuizAnswerZodSchema),
-  QuizAnswerController.createQuizAnswerController
+  QuizAnswerController.createQuizAnswerController,
 );
 
 router.get(
   '/',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can get all
-  QuizAnswerController.getAllQuizAnswersController
+  QuizAnswerController.getAllQuizAnswersController,
 );
 
 router.get(
   '/:id',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can get single
-  QuizAnswerController.getSingleQuizAnswerController
+  QuizAnswerController.getSingleQuizAnswerController,
 );
 
 router.patch(
   '/:id',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can update
   validateRequest(QuizAnswerValidation.updateQuizAnswerZodSchema),
-  QuizAnswerController.updateQuizAnswerController
+  QuizAnswerController.updateQuizAnswerController,
 );
 
 router.delete(
   '/:id',
   auth([Role.ADMIN]), // Only ADMIN can delete
-  QuizAnswerController.deleteQuizAnswerController
+  QuizAnswerController.deleteQuizAnswerController,
 );
 
 export const QuizAnswerRoutes = router;

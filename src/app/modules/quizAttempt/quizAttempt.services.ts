@@ -82,7 +82,10 @@ const getSingleQuizAttempt = async (id: string): Promise<QuizAttempt | null> => 
   }
 };
 
-const updateQuizAttempt = async (id: string, payload: IUpdateQuizAttemptPayload): Promise<QuizAttempt> => {
+const updateQuizAttempt = async (
+  id: string,
+  payload: IUpdateQuizAttemptPayload,
+): Promise<QuizAttempt> => {
   try {
     const result = await prisma.quizAttempt.update({
       where: {
@@ -93,7 +96,8 @@ const updateQuizAttempt = async (id: string, payload: IUpdateQuizAttemptPayload)
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to update not found
+      if (error.code === 'P2025') {
+        // Record to update not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Quiz attempt not found');
       }
     }
@@ -111,7 +115,8 @@ const deleteQuizAttempt = async (id: string): Promise<QuizAttempt> => {
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to delete not found
+      if (error.code === 'P2025') {
+        // Record to delete not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Quiz attempt not found');
       }
     }

@@ -1,4 +1,10 @@
-import { Prisma, PrismaClient, SessionType, Difficulty, IELTSWritingTaskType } from '@prisma/client';
+import {
+  Prisma,
+  PrismaClient,
+  SessionType,
+  Difficulty,
+  IELTSWritingTaskType,
+} from '@prisma/client';
 import moment from 'moment';
 
 const prisma = new PrismaClient();
@@ -21,51 +27,60 @@ const getUserDashboardData = async (userId: string) => {
 
   // Calculate average scores with cached filtered arrays
   const listeningSessions = sessions.filter(
-    s => s.type === SessionType.IELTS_LISTENING && s.score !== null
+    (s) => s.type === SessionType.IELTS_LISTENING && s.score !== null,
   );
   // console.log('Filtered listeningSessions:', listeningSessions);
-  const avgListeningScore = listeningSessions.length > 0
-    ? listeningSessions.reduce((acc, s) => acc + (s.score ?? 0), 0) / listeningSessions.length
-    : 0;
+  const avgListeningScore =
+    listeningSessions.length > 0
+      ? listeningSessions.reduce((acc, s) => acc + (s.score ?? 0), 0) / listeningSessions.length
+      : 0;
   // console.log('avgListeningScore:', avgListeningScore);
 
   const readingSessions = sessions.filter(
-    s => s.type === SessionType.IELTS_READING && s.score !== null
+    (s) => s.type === SessionType.IELTS_READING && s.score !== null,
   );
   // console.log('Filtered readingSessions:', readingSessions);
-  const avgReadingScore = readingSessions.length > 0
-    ? readingSessions.reduce((acc, s) => acc + (s.score ?? 0), 0) / readingSessions.length
-    : 0;
+  const avgReadingScore =
+    readingSessions.length > 0
+      ? readingSessions.reduce((acc, s) => acc + (s.score ?? 0), 0) / readingSessions.length
+      : 0;
   // console.log('avgReadingScore:', avgReadingScore);
 
   const speakingSessions = sessions.filter(
-    s => s.type === SessionType.IELTS_SPEAKING && s.score !== null
+    (s) => s.type === SessionType.IELTS_SPEAKING && s.score !== null,
   );
   // console.log('Filtered speakingSessions:', speakingSessions);
-  const avgSpeakingScore = speakingSessions.length > 0
-    ? speakingSessions.reduce((acc, s) => acc + (s.score ?? 0), 0) / speakingSessions.length
-    : 0;
+  const avgSpeakingScore =
+    speakingSessions.length > 0
+      ? speakingSessions.reduce((acc, s) => acc + (s.score ?? 0), 0) / speakingSessions.length
+      : 0;
   // console.log('avgSpeakingScore:', avgSpeakingScore);
 
-  const writingSubmissionsWithScore = writingSubmissions.filter(s => s.score !== null);
+  const writingSubmissionsWithScore = writingSubmissions.filter((s) => s.score !== null);
   // console.log('Filtered writingSubmissionsWithScore:', writingSubmissionsWithScore);
-  const avgWritingScore = writingSubmissionsWithScore.length > 0
-    ? writingSubmissionsWithScore.reduce((acc, s) => acc + (s.score ?? 0), 0) / writingSubmissionsWithScore.length
-    : 0;
+  const avgWritingScore =
+    writingSubmissionsWithScore.length > 0
+      ? writingSubmissionsWithScore.reduce((acc, s) => acc + (s.score ?? 0), 0) /
+        writingSubmissionsWithScore.length
+      : 0;
   // console.log('avgWritingScore:', avgWritingScore);
 
-  const mockSessions = sessions.filter(s => s.type.startsWith('MOCK') && s.score !== null);
+  const mockSessions = sessions.filter((s) => s.type.startsWith('MOCK') && s.score !== null);
   // console.log('Filtered mockSessions:', mockSessions);
-  const avgMockInterviewScore = mockSessions.length > 0
-    ? mockSessions.reduce((acc, s) => acc + (s.score ?? 0), 0) / mockSessions.length
-    : 0;
+  const avgMockInterviewScore =
+    mockSessions.length > 0
+      ? mockSessions.reduce((acc, s) => acc + (s.score ?? 0), 0) / mockSessions.length
+      : 0;
   // console.log('avgMockInterviewScore:', avgMockInterviewScore);
 
-  const latestUserProgress = await prisma.userProgress.findFirst({ where: { userId }, orderBy: { date: 'desc' } });
+  const latestUserProgress = await prisma.userProgress.findFirst({
+    where: { userId },
+    orderBy: { date: 'desc' },
+  });
 
-  const totalSessionsCompleted = sessions.filter(s => s.endedAt !== null).length;
+  const totalSessionsCompleted = sessions.filter((s) => s.endedAt !== null).length;
   const totalQuizzesTaken = quizAttempts.length;
-  const correctQuizAnswers = quizAnswers.filter(a => a.isCorrect).length;
+  const correctQuizAnswers = quizAnswers.filter((a) => a.isCorrect).length;
   const quizAccuracy = quizAnswers.length > 0 ? (correctQuizAnswers / quizAnswers.length) * 100 : 0;
 
   const skillScores: Record<string, number> = {
@@ -121,7 +136,9 @@ const getUserDashboardData = async (userId: string) => {
   const ieltsScoreTrend = {
     listening: sessions
       .filter(
-        (s): s is {
+        (
+          s,
+        ): s is {
           id: string;
           userId: string;
           type: SessionType;
@@ -130,13 +147,14 @@ const getUserDashboardData = async (userId: string) => {
           score: number;
           transcript: string | null;
           feedback: Prisma.JsonValue | null;
-        } =>
-          s.type === SessionType.IELTS_LISTENING && s.startedAt !== null && s.score !== null
+        } => s.type === SessionType.IELTS_LISTENING && s.startedAt !== null && s.score !== null,
       )
-      .map(s => ({ date: s.startedAt, score: s.score })),
+      .map((s) => ({ date: s.startedAt, score: s.score })),
     reading: sessions
       .filter(
-        (s): s is {
+        (
+          s,
+        ): s is {
           id: string;
           userId: string;
           type: SessionType;
@@ -145,30 +163,32 @@ const getUserDashboardData = async (userId: string) => {
           score: number;
           transcript: string | null;
           feedback: Prisma.JsonValue | null;
-        } =>
-          s.type === SessionType.IELTS_READING && s.startedAt !== null && s.score !== null
+        } => s.type === SessionType.IELTS_READING && s.startedAt !== null && s.score !== null,
       )
-      .map(s => ({ date: s.startedAt, score: s.score })),
+      .map((s) => ({ date: s.startedAt, score: s.score })),
     writing: writingSubmissions
       .filter(
-        (s): s is {
+        (
+          s,
+        ): s is {
           id: string;
           userId: string;
           sessionId: string | null;
-          writingTaskId: string
+          writingTaskId: string;
           writingTask: IELTSWritingTaskType;
           imageUrl: string;
           extractedText: string | null;
           score: number;
           feedback: Prisma.JsonValue | null;
           createdAt: Date;
-        } =>
-          s.createdAt !== null && s.score !== null
+        } => s.createdAt !== null && s.score !== null,
       )
-      .map(s => ({ date: s.createdAt, score: s.score })),
+      .map((s) => ({ date: s.createdAt, score: s.score })),
     speaking: sessions
       .filter(
-        (s): s is {
+        (
+          s,
+        ): s is {
           id: string;
           userId: string;
           type: SessionType;
@@ -177,10 +197,9 @@ const getUserDashboardData = async (userId: string) => {
           score: number;
           transcript: string | null;
           feedback: Prisma.JsonValue | null;
-        } =>
-          s.type === SessionType.IELTS_SPEAKING && s.startedAt !== null && s.score !== null
+        } => s.type === SessionType.IELTS_SPEAKING && s.startedAt !== null && s.score !== null,
       )
-      .map(s => ({ date: s.startedAt, score: s.score })),
+      .map((s) => ({ date: s.startedAt, score: s.score })),
   };
 
   const skillBreakdown = [
@@ -208,37 +227,46 @@ const getUserDashboardData = async (userId: string) => {
     include: { question: { select: { difficulty: true } } },
   });
 
-  const performanceByDifficulty = quizAnswersWithDifficulty.reduce((acc, answer) => {
-    const difficulty = answer.question.difficulty;
-    if (!acc[difficulty]) {
-      acc[difficulty] = { correct: 0, total: 0 };
-    }
-    if (answer.isCorrect) {
-      acc[difficulty].correct++;
-    }
-    acc[difficulty].total++;
-    return acc;
-  }, {} as Record<Difficulty, { correct: number; total: number }>);
+  const performanceByDifficulty = quizAnswersWithDifficulty.reduce(
+    (acc, answer) => {
+      const difficulty = answer.question.difficulty;
+      if (!acc[difficulty]) {
+        acc[difficulty] = { correct: 0, total: 0 };
+      }
+      if (answer.isCorrect) {
+        acc[difficulty].correct++;
+      }
+      acc[difficulty].total++;
+      return acc;
+    },
+    {} as Record<Difficulty, { correct: number; total: number }>,
+  );
 
-  const timeAllocationData = sessions.reduce((acc, session) => {
-    if (session.endedAt && session.startedAt) {
-      const duration = moment(session.endedAt).diff(moment(session.startedAt), 'minutes');
-      acc[session.type] = (acc[session.type] ?? 0) + duration;
-    }
-    return acc;
-  }, {} as Record<SessionType, number>);
+  const timeAllocationData = sessions.reduce(
+    (acc, session) => {
+      if (session.endedAt && session.startedAt) {
+        const duration = moment(session.endedAt).diff(moment(session.startedAt), 'minutes');
+        acc[session.type] = (acc[session.type] ?? 0) + duration;
+      }
+      return acc;
+    },
+    {} as Record<SessionType, number>,
+  );
 
   const charts = {
     ieltsScoreTrend,
     skillBreakdown,
-    activityHeatmap: activityHeatmap.map(d => ({ date: d.startedAt, count: d._count.id })),
+    activityHeatmap: activityHeatmap.map((d) => ({ date: d.startedAt, count: d._count.id })),
     quizPerformance,
     performanceByDifficulty: Object.entries(performanceByDifficulty).map(([difficulty, data]) => ({
       difficulty,
       ...data,
       accuracy: data.total > 0 ? (data.correct / data.total) * 100 : 0,
     })),
-    timeAllocation: Object.entries(timeAllocationData).map(([type, minutes]) => ({ type, minutes })),
+    timeAllocation: Object.entries(timeAllocationData).map(([type, minutes]) => ({
+      type,
+      minutes,
+    })),
   };
 
   return { stats, charts };

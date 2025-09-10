@@ -47,7 +47,7 @@ const changeUserRoleController = catchAsync(async (req: Request, res: Response) 
   const { role } = req.body;
 
   if (!id) {
-    return; 
+    return;
   }
 
   const result = await UserServices.changeUserRole(id, role);

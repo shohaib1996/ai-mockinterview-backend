@@ -11,15 +11,9 @@ router.post(
   WritingTaskController.createWritingTaskController,
 );
 
-router.get(
-  '/',
-  WritingTaskController.getAllWritingTasksController,
-);
+router.get('/', WritingTaskController.getAllWritingTasksController);
 
-router.get(
-  '/:id',
-  WritingTaskController.getSingleWritingTaskController,
-);
+router.get('/:id', WritingTaskController.getSingleWritingTaskController);
 
 router.patch(
   '/:id',
@@ -27,9 +21,6 @@ router.patch(
   WritingTaskController.updateWritingTaskController,
 );
 
-router.delete(
-  '/:id',
-  WritingTaskController.deleteWritingTaskController,
-);
+router.delete('/:id', WritingTaskController.deleteWritingTaskController);
 
 export const WritingTaskRoutes = router;

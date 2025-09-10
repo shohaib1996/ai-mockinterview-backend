@@ -1,5 +1,3 @@
-import { Difficulty, SessionType } from '@prisma/client';
-
 export interface IAdminDashboardStats {
   totalUsers: number;
   weeklyActiveUsers: number;

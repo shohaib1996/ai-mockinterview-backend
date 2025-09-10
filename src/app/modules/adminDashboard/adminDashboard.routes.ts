@@ -5,10 +5,6 @@ import { Role } from '@prisma/client';
 
 const router = express.Router();
 
-router.get(
-  '/',
-  auth([Role.ADMIN]),
-  AdminDashboardController.getAdminDashboardData
-);
+router.get('/', auth([Role.ADMIN]), AdminDashboardController.getAdminDashboardData);
 
 export const AdminDashboardRoutes = router;

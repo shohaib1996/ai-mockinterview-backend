@@ -1,4 +1,3 @@
-
 import { z } from 'zod';
 
 const chatValidationSchema = z.object({
@@ -7,7 +6,7 @@ const chatValidationSchema = z.object({
       z.object({
         role: z.enum(['user', 'assistant']),
         content: z.string(),
-      })
+      }),
     ),
   }),
 });

@@ -8,7 +8,7 @@ const globalErrorHandler = (
   err: Error,
   req: Request,
   res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   next: NextFunction,
 ) => {
   let statusCode = 500;
@@ -24,13 +24,13 @@ const globalErrorHandler = (
     message = err.message;
   }
 
-  const stack = 
+  const stack =
     process.env.NODE_ENV === 'production'
-    ? null
-    : err.stack
-      ?.split('\n')
-      .map(line => line.trim())
-      .filter(line => line.startsWith('at '));
+      ? null
+      : err.stack
+          ?.split('\n')
+          .map((line) => line.trim())
+          .filter((line) => line.startsWith('at '));
 
   res.status(statusCode).json({
     success: false,

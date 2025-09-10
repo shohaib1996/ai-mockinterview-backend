@@ -4,13 +4,12 @@ import catchAsync from '@/app/utils/catchAsync';
 import { uploadToCloudinary } from '@/app/lib/multer';
 import { ApiError } from '@/app/errors/apiError';
 
-
 const uploadFileController = catchAsync(async (req: Request, res: Response) => {
   try {
     let urls: string[] = [];
 
     if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-      const uploadPromises = req.files.map(file => uploadToCloudinary(file));
+      const uploadPromises = req.files.map((file) => uploadToCloudinary(file));
       const results = await Promise.all(uploadPromises);
       urls = results.map((result: any) => result.secure_url);
     } else if (req.file) {

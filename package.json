@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/app/server.ts",
     "build": "tsc && tsc-alias",
-    "start": "node dist/index.js",
+    "start": "node dist/app/server.js",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:generate": "npx prisma generate",
     "prisma:studio": "prisma studio",

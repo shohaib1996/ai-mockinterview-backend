@@ -2,9 +2,14 @@ import { Prisma, ListeningAudio } from '@prisma/client';
 import httpStatus from 'http-status';
 import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
-import { ICreateListeningAudioPayload, IUpdateListeningAudioPayload } from './listeningAudio.interface';
+import {
+  ICreateListeningAudioPayload,
+  IUpdateListeningAudioPayload,
+} from './listeningAudio.interface';
 
-const createListeningAudio = async (payload: ICreateListeningAudioPayload): Promise<ListeningAudio> => {
+const createListeningAudio = async (
+  payload: ICreateListeningAudioPayload,
+): Promise<ListeningAudio> => {
   try {
     const result = await prisma.listeningAudio.create({
       data: payload,
@@ -89,7 +94,10 @@ const getSingleListeningAudio = async (id: string): Promise<ListeningAudio | nul
   }
 };
 
-const updateListeningAudio = async (id: string, payload: IUpdateListeningAudioPayload): Promise<ListeningAudio> => {
+const updateListeningAudio = async (
+  id: string,
+  payload: IUpdateListeningAudioPayload,
+): Promise<ListeningAudio> => {
   try {
     const result = await prisma.listeningAudio.update({
       where: {
@@ -100,7 +108,8 @@ const updateListeningAudio = async (id: string, payload: IUpdateListeningAudioPa
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to update not found
+      if (error.code === 'P2025') {
+        // Record to update not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Listening audio not found');
       }
     }
@@ -118,7 +127,8 @@ const deleteListeningAudio = async (id: string): Promise<ListeningAudio> => {
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to delete not found
+      if (error.code === 'P2025') {
+        // Record to delete not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Listening audio not found');
       }
     }

@@ -1,6 +1,6 @@
 import { Prisma, Answer } from '@prisma/client';
 import httpStatus from 'http-status';
-import prisma from "@/app/lib/prisma"
+import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
 import { ICreateAnswerPayload, IUpdateAnswerPayload } from './answer.interface';
 
@@ -10,7 +10,7 @@ const createAnswer = async (
   try {
     if (Array.isArray(payload)) {
       const result = await prisma.$transaction(
-        payload.map(p => prisma.answer.create({ data: p })),
+        payload.map((p) => prisma.answer.create({ data: p })),
       );
       return result;
     }
@@ -85,7 +85,8 @@ const updateAnswer = async (id: string, payload: IUpdateAnswerPayload): Promise<
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to update not found
+      if (error.code === 'P2025') {
+        // Record to update not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Answer not found');
       }
     }
@@ -103,7 +104,8 @@ const deleteAnswer = async (id: string): Promise<Answer> => {
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to delete not found
+      if (error.code === 'P2025') {
+        // Record to delete not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Answer not found');
       }
     }

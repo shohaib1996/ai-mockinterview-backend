@@ -10,7 +10,7 @@ const createQuizAnswer = async (
   try {
     if (Array.isArray(payload)) {
       const result = await prisma.$transaction(
-        payload.map(p => prisma.quizAnswer.create({ data: p })),
+        payload.map((p) => prisma.quizAnswer.create({ data: p })),
       );
       return result;
     }
@@ -74,7 +74,10 @@ const getSingleQuizAnswer = async (id: string): Promise<QuizAnswer | null> => {
   }
 };
 
-const updateQuizAnswer = async (id: string, payload: IUpdateQuizAnswerPayload): Promise<QuizAnswer> => {
+const updateQuizAnswer = async (
+  id: string,
+  payload: IUpdateQuizAnswerPayload,
+): Promise<QuizAnswer> => {
   try {
     const result = await prisma.quizAnswer.update({
       where: {
@@ -85,7 +88,8 @@ const updateQuizAnswer = async (id: string, payload: IUpdateQuizAnswerPayload): 
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to update not found
+      if (error.code === 'P2025') {
+        // Record to update not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Quiz answer not found');
       }
     }
@@ -103,7 +107,8 @@ const deleteQuizAnswer = async (id: string): Promise<QuizAnswer> => {
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to delete not found
+      if (error.code === 'P2025') {
+        // Record to delete not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Quiz answer not found');
       }
     }

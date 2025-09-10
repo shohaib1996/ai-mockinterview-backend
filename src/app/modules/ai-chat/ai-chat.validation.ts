@@ -6,7 +6,7 @@ const createChatCompletionZodSchema = z.object({
       z.object({
         role: z.enum(['user', 'assistant']),
         content: z.string(),
-      })
+      }),
     ),
   }),
 });

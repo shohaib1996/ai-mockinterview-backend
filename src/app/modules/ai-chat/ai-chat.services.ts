@@ -5,6 +5,7 @@ import { ApiError } from '@/app/errors/apiError';
 import httpStatus from 'http-status';
 import { ChatCompletionMessageParam } from 'openai/resources/index';
 import prisma from '@/app/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
@@ -58,12 +59,12 @@ After each student response, continue with the next question in sequence.
       // Update existing record using its id
       await prisma.aIChatConversation.update({
         where: { id: existingSession.id },
-        data: { conversation: updatedConversation },
+        data: { conversation: updatedConversation as Prisma.InputJsonValue },
       });
     } else {
       // Create new record
       await prisma.aIChatConversation.create({
-        data: { sessionId, conversation: updatedConversation },
+        data: { sessionId, conversation: updatedConversation as Prisma.InputJsonValue},
       });
     }
 
@@ -94,13 +95,24 @@ const analyzeConversation = async (sessionId: string) => {
 
     // Type guard to ensure conversation elements are of the expected type
     const isMessageObject = (item: any): item is { role: string; content: string } => {
-      return typeof item === 'object' && item !== null && 'role' in item && 'content' in item && typeof item.role === 'string' && typeof item.content === 'string';
+      return (
+        typeof item === 'object' &&
+        item !== null &&
+        'role' in item &&
+        'content' in item &&
+        typeof item.role === 'string' &&
+        typeof item.content === 'string'
+      );
     };
 
-    const conversation: Array<{ role: string; content: string }> = rawConversation.filter(isMessageObject);
+    const conversation: { role: string; content: string }[] =
+      rawConversation.filter(isMessageObject);
 
     if (conversation.length === 0) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'No valid conversation messages found for analysis');
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        'No valid conversation messages found for analysis',
+      );
     }
 
     const analysisPrompt = `
@@ -109,7 +121,7 @@ const analyzeConversation = async (sessionId: string) => {
       Also, provide detailed feedback for improvement and highlight areas of appreciation.
 
       Conversation:
-      ${conversation.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
+      ${conversation.map((msg) => `${msg.role}: ${msg.content}`).join('\n')}
 
       Provide the output in the following JSON format:
       {
@@ -121,7 +133,7 @@ const analyzeConversation = async (sessionId: string) => {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [{ role: 'user', content: analysisPrompt }],
-      response_format: { type: "json_object" },
+      response_format: { type: 'json_object' },
     });
 
     const aiResponseContent = completion.choices[0]?.message.content;

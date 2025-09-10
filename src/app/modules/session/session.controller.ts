@@ -4,7 +4,6 @@ import { SessionServices } from './session.services';
 import catchAsync from '@/app/utils/catchAsync';
 import { ApiError } from '@/app/errors/apiError';
 
-
 import { User } from '@prisma/client';
 
 const createSessionController = catchAsync(async (req: Request, res: Response) => {

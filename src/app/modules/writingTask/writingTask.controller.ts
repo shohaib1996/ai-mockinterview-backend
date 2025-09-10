@@ -16,7 +16,12 @@ const createWritingTaskController = catchAsync(async (req: Request, res: Respons
 
 const getAllWritingTasksController = catchAsync(async (req: Request, res: Response) => {
   const { page, limit, task, difficulty } = req.query;
-  const options: { page?: number; limit?: number; task?: IELTSWritingTaskType; difficulty?: Difficulty } = {};
+  const options: {
+    page?: number;
+    limit?: number;
+    task?: IELTSWritingTaskType;
+    difficulty?: Difficulty;
+  } = {};
 
   if (page) options.page = Number(page);
   if (limit) options.limit = Number(limit);

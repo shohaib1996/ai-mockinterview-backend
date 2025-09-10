@@ -15,7 +15,8 @@ const createUserProgress = async (payload: ICreateUserProgressPayload): Promise<
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2002') { // Unique constraint failed
+      if (error.code === 'P2002') {
+        // Unique constraint failed
         throw new ApiError(httpStatus.CONFLICT, 'User progress for this date already exists');
       }
     }
@@ -63,7 +64,10 @@ const getAllUserProgress = async (options: {
       data: result,
     };
   } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve user progress records');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Failed to retrieve user progress records',
+    );
   }
 };
 
@@ -80,7 +84,10 @@ const getSingleUserProgress = async (id: string): Promise<UserProgress | null> =
   }
 };
 
-const updateUserProgress = async (id: string, payload: IUpdateUserProgressPayload): Promise<UserProgress> => {
+const updateUserProgress = async (
+  id: string,
+  payload: IUpdateUserProgressPayload,
+): Promise<UserProgress> => {
   try {
     const updateData: Prisma.UserProgressUpdateInput = {};
     if (payload.userId !== undefined) {
@@ -112,7 +119,8 @@ const updateUserProgress = async (id: string, payload: IUpdateUserProgressPayloa
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to update not found
+      if (error.code === 'P2025') {
+        // Record to update not found
         throw new ApiError(httpStatus.NOT_FOUND, 'User progress not found');
       }
     }
@@ -130,7 +138,8 @@ const deleteUserProgress = async (id: string): Promise<UserProgress> => {
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to delete not found
+      if (error.code === 'P2025') {
+        // Record to delete not found
         throw new ApiError(httpStatus.NOT_FOUND, 'User progress not found');
       }
     }

@@ -15,7 +15,7 @@ const createListeningAudioController = catchAsync(async (req: Request, res: Resp
 
 const getAllListeningAudiosController = catchAsync(async (req: Request, res: Response) => {
   const { page, limit } = req.query;
-  const options: { page?: number; limit?: number; userId?: string; } = {};
+  const options: { page?: number; limit?: number; userId?: string } = {};
 
   if (page) options.page = Number(page);
   if (limit) options.limit = Number(limit);

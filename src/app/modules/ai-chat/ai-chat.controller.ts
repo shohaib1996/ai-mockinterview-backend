@@ -3,7 +3,6 @@ import httpStatus from 'http-status';
 import catchAsync from '@/app/utils/catchAsync';
 import { AiChatServices } from './ai-chat.services';
 
-
 const createChatCompletionController = catchAsync(async (req: Request, res: Response) => {
   const result = await AiChatServices.createChatCompletion(req.body);
   res.status(httpStatus.OK).json({

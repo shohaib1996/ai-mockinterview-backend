@@ -2,7 +2,7 @@ import { Question, QuestionType, SessionType, Difficulty } from '@prisma/client'
 
 export type IQuestion = Question;
 
-export type ICreateQuestionPayload = {
+export interface ICreateQuestionPayload {
   type: QuestionType;
   sessionType: SessionType;
   text: string;
@@ -13,15 +13,15 @@ export type ICreateQuestionPayload = {
   listeningAudioId?: string;
   readingPassageId?: string;
   quizAttemptId?: string;
-};
+}
 
 export type IUpdateQuestionPayload = Partial<ICreateQuestionPayload>;
 
-export type IQuestionFilters = {
+export interface IQuestionFilters {
   sessionType?: SessionType;
   listeningAudioId?: string;
   readingPassageId?: string;
   page?: number;
   limit?: number;
-  quizAttemptId?: string
-};
+  quizAttemptId?: string;
+}

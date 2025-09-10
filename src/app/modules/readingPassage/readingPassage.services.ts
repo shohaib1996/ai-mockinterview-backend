@@ -2,9 +2,14 @@ import { Prisma, ReadingPassage } from '@prisma/client';
 import httpStatus from 'http-status';
 import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
-import { ICreateReadingPassagePayload, IUpdateReadingPassagePayload } from './readingPassage.interface';
+import {
+  ICreateReadingPassagePayload,
+  IUpdateReadingPassagePayload,
+} from './readingPassage.interface';
 
-const createReadingPassage = async (payload: ICreateReadingPassagePayload): Promise<ReadingPassage> => {
+const createReadingPassage = async (
+  payload: ICreateReadingPassagePayload,
+): Promise<ReadingPassage> => {
   try {
     const result = await prisma.readingPassage.create({
       data: payload,
@@ -85,7 +90,10 @@ const getSingleReadingPassage = async (id: string): Promise<ReadingPassage | nul
   }
 };
 
-const updateReadingPassage = async (id: string, payload: IUpdateReadingPassagePayload): Promise<ReadingPassage> => {
+const updateReadingPassage = async (
+  id: string,
+  payload: IUpdateReadingPassagePayload,
+): Promise<ReadingPassage> => {
   try {
     const result = await prisma.readingPassage.update({
       where: {
@@ -96,7 +104,8 @@ const updateReadingPassage = async (id: string, payload: IUpdateReadingPassagePa
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to update not found
+      if (error.code === 'P2025') {
+        // Record to update not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Reading passage not found');
       }
     }
@@ -114,7 +123,8 @@ const deleteReadingPassage = async (id: string): Promise<ReadingPassage> => {
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to delete not found
+      if (error.code === 'P2025') {
+        // Record to delete not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Reading passage not found');
       }
     }

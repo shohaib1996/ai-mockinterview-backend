@@ -15,7 +15,6 @@ const createSessionZodSchema = z.object({
   }),
 });
 
-
 const updateSessionZodSchema = z.object({
   body: z.object({
     userId: z.string().optional(),

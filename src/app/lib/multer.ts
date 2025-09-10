@@ -1,15 +1,10 @@
-
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import config from '../config';
 import { ApiError } from '../errors/apiError';
 import httpStatus from 'http-status';
 
-if (
-  config.CLOUDINARY_CLOUD_NAME &&
-  config.CLOUDINARY_API_KEY &&
-  config.CLOUDINARY_API_SECRET
-) {
+if (config.CLOUDINARY_CLOUD_NAME && config.CLOUDINARY_API_KEY && config.CLOUDINARY_API_SECRET) {
   cloudinary.config({
     cloud_name: config.CLOUDINARY_CLOUD_NAME,
     api_key: config.CLOUDINARY_API_KEY,
@@ -69,14 +64,15 @@ export const uploadCsv = multer({
   },
 });
 
-
 export const uploadToCloudinary = (file: any) => {
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload_stream({ resource_type: 'auto' }, (error, result) => {
-      if (error) {
-        reject(error);
-      }
-      resolve(result);
-    }).end(file.buffer);
+    cloudinary.uploader
+      .upload_stream({ resource_type: 'auto' }, (error, result) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(result);
+      })
+      .end(file.buffer);
   });
 };

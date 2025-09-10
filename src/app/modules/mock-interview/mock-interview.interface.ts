@@ -1,13 +1,12 @@
-
 import { SessionType } from '@prisma/client';
 
-export type IConversationMessage = {
+export interface IConversationMessage {
   role: 'user' | 'assistant';
   content: string;
-};
+}
 
-export type IChatPayload = {
+export interface IChatPayload {
   sessionId: string;
   sessionType: SessionType;
   conversation: IConversationMessage[];
-};
+}

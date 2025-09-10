@@ -11,32 +11,32 @@ router.post(
   '/',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can create
   validateRequest(WritingSubmissionValidation.createWritingSubmissionZodSchema),
-  WritingSubmissionController.createWritingSubmissionController
+  WritingSubmissionController.createWritingSubmissionController,
 );
 
 router.get(
   '/',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can get all
-  WritingSubmissionController.getAllWritingSubmissionsController
+  WritingSubmissionController.getAllWritingSubmissionsController,
 );
 
 router.get(
   '/:id',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can get single
-  WritingSubmissionController.getSingleWritingSubmissionController
+  WritingSubmissionController.getSingleWritingSubmissionController,
 );
 
 router.patch(
   '/:id',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can update
   validateRequest(WritingSubmissionValidation.updateWritingSubmissionZodSchema),
-  WritingSubmissionController.updateWritingSubmissionController
+  WritingSubmissionController.updateWritingSubmissionController,
 );
 
 router.delete(
   '/:id',
   auth([Role.ADMIN]), // Only ADMIN can delete
-  WritingSubmissionController.deleteWritingSubmissionController
+  WritingSubmissionController.deleteWritingSubmissionController,
 );
 
 export const WritingSubmissionRoutes = router;

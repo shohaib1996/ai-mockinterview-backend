@@ -5,10 +5,7 @@ import { ICreateSessionPayload, IUpdateSessionPayload } from './session.interfac
 import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
 
-const createSession = async (
-  userId: string,
-  payload: ICreateSessionPayload,
-): Promise<Session> => {
+const createSession = async (userId: string, payload: ICreateSessionPayload): Promise<Session> => {
   try {
     const result = await prisma.session.create({
       data: {
@@ -225,7 +222,8 @@ const deleteSession = async (id: string): Promise<Session> => {
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to delete not found
+      if (error.code === 'P2025') {
+        // Record to delete not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Session not found');
       }
     }

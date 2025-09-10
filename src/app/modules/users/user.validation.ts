@@ -23,10 +23,7 @@ export const getAllUsersZodSchema = z.object({
     limit: z.string().optional(),
     id: z.string().optional(),
     name: z.string().optional(),
-    email: z.preprocess(
-      (val) => (val === '' ? undefined : val),
-      z.string().email().optional()
-    ),
+    email: z.preprocess((val) => (val === '' ? undefined : val), z.string().email().optional()),
   }),
 });
 

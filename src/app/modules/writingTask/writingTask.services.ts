@@ -3,12 +3,12 @@ import httpStatus from 'http-status';
 import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
 
-export type ICreateWritingTaskPayload = {
+export interface ICreateWritingTaskPayload {
   task: IELTSWritingTaskType;
   promptText: string;
   imageUrl?: string;
   difficulty?: Difficulty;
-};
+}
 
 const createWritingTask = async (payload: ICreateWritingTaskPayload): Promise<WritingTask> => {
   try {
@@ -28,7 +28,7 @@ const getAllWritingTasks = async (options: {
   page?: number;
   limit?: number;
   task?: IELTSWritingTaskType;
-  difficulty?:Difficulty;
+  difficulty?: Difficulty;
 }): Promise<{ meta: { page: number; limit: number; total: number }; data: WritingTask[] }> => {
   const { page = 1, limit = 10, task, difficulty } = options;
   const skip = (page - 1) * limit;
@@ -76,7 +76,10 @@ const getSingleWritingTask = async (id: string): Promise<WritingTask | null> => 
   }
 };
 
-const updateWritingTask = async (id: string, payload: Partial<ICreateWritingTaskPayload>): Promise<WritingTask> => {
+const updateWritingTask = async (
+  id: string,
+  payload: Partial<ICreateWritingTaskPayload>,
+): Promise<WritingTask> => {
   try {
     const result = await prisma.writingTask.update({
       where: {

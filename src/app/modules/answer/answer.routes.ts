@@ -11,32 +11,32 @@ router.post(
   '/',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can create answers
   validateRequest(AnswerValidation.createAnswerZodSchema),
-  AnswerController.createAnswerController
+  AnswerController.createAnswerController,
 );
 
 router.get(
   '/',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can get all
-  AnswerController.getAllAnswersController
+  AnswerController.getAllAnswersController,
 );
 
 router.get(
   '/:id',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can get single
-  AnswerController.getSingleAnswerController
+  AnswerController.getSingleAnswerController,
 );
 
 router.patch(
   '/:id',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can update
   validateRequest(AnswerValidation.updateAnswerZodSchema),
-  AnswerController.updateAnswerController
+  AnswerController.updateAnswerController,
 );
 
 router.delete(
   '/:id',
   auth([Role.ADMIN]), // Only ADMIN can delete
-  AnswerController.deleteAnswerController
+  AnswerController.deleteAnswerController,
 );
 
 export const AnswerRoutes = router;

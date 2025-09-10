@@ -11,39 +11,39 @@ router.post(
   '/',
   auth([Role.ADMIN]), // Only ADMIN can create
   validateRequest(QuestionValidation.createQuestionZodSchema),
-  QuestionController.createQuestionController
+  QuestionController.createQuestionController,
 );
 
 router.get(
   '/',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can get all
-  QuestionController.getAllQuestionsController
+  QuestionController.getAllQuestionsController,
 );
 
 router.get(
   '/:id',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can get single
-  QuestionController.getSingleQuestionController
+  QuestionController.getSingleQuestionController,
 );
 
 router.patch(
   '/:id',
   auth([Role.ADMIN]), // Only ADMIN can update
   validateRequest(QuestionValidation.updateQuestionZodSchema),
-  QuestionController.updateQuestionController
+  QuestionController.updateQuestionController,
 );
 
 router.delete(
   '/:id',
   auth([Role.ADMIN]), // Only ADMIN can delete
-  QuestionController.deleteQuestionController
+  QuestionController.deleteQuestionController,
 );
 
 router.post(
   '/generate',
   auth([Role.ADMIN, Role.USER]), // Only ADMIN can generate questions
   validateRequest(QuestionValidation.generateQuestionsZodSchema),
-  QuestionController.generateQuestionsController
+  QuestionController.generateQuestionsController,
 );
 
 export const QuestionRoutes = router;

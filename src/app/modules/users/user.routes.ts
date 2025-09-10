@@ -2,18 +2,19 @@ import express from 'express';
 
 import { UserController } from './user.controller';
 import validateRequest from '@/app/middlewares/validateRequest';
-import { createUserZodSchema, getAllUsersZodSchema, loginUserZodSchema, changeUserRoleZodSchema } from './user.validation';
+import {
+  createUserZodSchema,
+  getAllUsersZodSchema,
+  loginUserZodSchema,
+  changeUserRoleZodSchema,
+} from './user.validation';
 import auth from '@/app/middlewares/auth';
 import { Role } from '@prisma/client';
 
 const router = express.Router();
 
 router.post('/register', validateRequest(createUserZodSchema), UserController.createUserController);
-router.post(
-  '/login',
-  validateRequest(loginUserZodSchema),
-  UserController.loginUserController,
-);
+router.post('/login', validateRequest(loginUserZodSchema), UserController.loginUserController);
 
 router.get(
   '/',

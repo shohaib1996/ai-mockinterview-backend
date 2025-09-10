@@ -1,4 +1,3 @@
-
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import catchAsync from '@/app/utils/catchAsync';
@@ -12,7 +11,10 @@ const uploadQuestionsController = catchAsync(async (req: Request, res: Response)
       message: 'Session ID is required',
     });
   }
-  const result = await MockInterviewServices.uploadQuestions(sessionId as string, req.file as Express.Multer.File);
+  const result = await MockInterviewServices.uploadQuestions(
+    sessionId as string,
+    req.file as Express.Multer.File,
+  );
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Questions uploaded successfully',
@@ -22,7 +24,7 @@ const uploadQuestionsController = catchAsync(async (req: Request, res: Response)
 
 const chatController = catchAsync(async (req: Request, res: Response) => {
   const { sessionId } = req.params;
-   if (!sessionId) {
+  if (!sessionId) {
     return res.status(httpStatus.BAD_REQUEST).json({
       success: false,
       message: 'Session ID is required',

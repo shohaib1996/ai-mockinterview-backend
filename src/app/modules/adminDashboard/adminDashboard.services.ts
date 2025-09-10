@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { SessionType, Difficulty, Prisma } from '@prisma/client';
+import { SessionType, Prisma } from '@prisma/client';
 import { IAdminDashboardData } from './adminDashboard.interface';
 import prisma from '@/app/lib/prisma';
 
@@ -59,17 +58,19 @@ const getAdminDashboardData = async (): Promise<IAdminDashboardData> => {
     },
   });
 
-  const userSignupsLast30Days = userSignups.map(item => ({
+  const userSignupsLast30Days = userSignups.map((item) => ({
     label: new Date(item.createdAt).toLocaleDateString(),
     value: item._count.id,
   }));
 
-  const sessionTypeDistribution = (await prisma.session.groupBy({
-    by: ['type'],
-    _count: {
-      id: true,
-    },
-  })).map(item => ({ label: item.type, value: item._count.id }));
+  const sessionTypeDistribution = (
+    await prisma.session.groupBy({
+      by: ['type'],
+      _count: {
+        id: true,
+      },
+    })
+  ).map((item) => ({ label: item.type, value: item._count.id }));
 
   const dailyActiveUsers = await prisma.session.groupBy({
     by: ['startedAt'],
@@ -79,41 +80,50 @@ const getAdminDashboardData = async (): Promise<IAdminDashboardData> => {
     },
   });
 
-  const dailyActiveUsersLast30Days = dailyActiveUsers.map(item => ({
+  const dailyActiveUsersLast30Days = dailyActiveUsers.map((item) => ({
     label: new Date(item.startedAt).toLocaleDateString(),
     value: item._count._all,
   }));
 
-  const questionDifficultyDistribution = (await prisma.question.groupBy({
-    by: ['difficulty'],
-    _count: {
-      id: true,
-    },
-  })).map(item => ({ label: item.difficulty, value: item._count.id }));
+  const questionDifficultyDistribution = (
+    await prisma.question.groupBy({
+      by: ['difficulty'],
+      _count: {
+        id: true,
+      },
+    })
+  ).map((item) => ({ label: item.difficulty, value: item._count.id }));
 
   const sessions = await prisma.session.findMany({
     select: { startedAt: true },
   });
 
-  const userEngagementByHour = Array(24).fill(0).map((_, hour) => {
-      const count = sessions.filter(session => new Date(session.startedAt).getUTCHours() === hour).length;
+  const userEngagementByHour = Array(24)
+    .fill(0)
+    .map((_, hour) => {
+      const count = sessions.filter(
+        (session) => new Date(session.startedAt).getUTCHours() === hour,
+      ).length;
       return { label: `${hour}:00`, value: count };
     });
 
-  const averageScoreBySessionType = (await prisma.session.groupBy({
-    by: ['type'],
-    _avg: {
-      score: true,
-    },
-  })).map(item => ({ label: item.type, value: item._avg.score }));
+  const averageScoreBySessionType = (
+    await prisma.session.groupBy({
+      by: ['type'],
+      _avg: {
+        score: true,
+      },
+    })
+  ).map((item) => ({ label: item.type, value: item._avg.score }));
 
-
-  const aiVsManualQuestions = (await prisma.question.groupBy({
-    by: ['aiGenerated'],
-    _count: {
-      id: true,
-    },
-  })).map(item => ({ label: item.aiGenerated ? 'AI Generated' : 'Manual', value: item._count.id }));
+  const aiVsManualQuestions = (
+    await prisma.question.groupBy({
+      by: ['aiGenerated'],
+      _count: {
+        id: true,
+      },
+    })
+  ).map((item) => ({ label: item.aiGenerated ? 'AI Generated' : 'Manual', value: item._count.id }));
 
   const totalListeningAudio = await prisma.listeningAudio.count();
   const totalReadingPassage = await prisma.readingPassage.count();

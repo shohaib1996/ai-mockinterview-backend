@@ -11,32 +11,32 @@ router.post(
   '/',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can create
   validateRequest(UserProgressValidation.createUserProgressZodSchema),
-  UserProgressController.createUserProgressController
+  UserProgressController.createUserProgressController,
 );
 
 router.get(
   '/',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can get all
-  UserProgressController.getAllUserProgressController
+  UserProgressController.getAllUserProgressController,
 );
 
 router.get(
   '/:id',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can get single
-  UserProgressController.getSingleUserProgressController
+  UserProgressController.getSingleUserProgressController,
 );
 
 router.patch(
   '/:id',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can update
   validateRequest(UserProgressValidation.updateUserProgressZodSchema),
-  UserProgressController.updateUserProgressController
+  UserProgressController.updateUserProgressController,
 );
 
 router.delete(
   '/:id',
   auth([Role.ADMIN]), // Only ADMIN can delete
-  UserProgressController.deleteUserProgressController
+  UserProgressController.deleteUserProgressController,
 );
 
 export const UserProgressRoutes = router;

@@ -2,7 +2,10 @@ import { Prisma, WritingSubmission } from '@prisma/client';
 import httpStatus from 'http-status';
 import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
-import { ICreateWritingSubmissionPayload, IUpdateWritingSubmissionPayload } from './writingSubmission.interface';
+import {
+  ICreateWritingSubmissionPayload,
+  IUpdateWritingSubmissionPayload,
+} from './writingSubmission.interface';
 import { WritingTaskServices } from '../writingTask/writingTask.services'; // Import WritingTaskServices
 import OpenAI from 'openai'; // Import OpenAI
 
@@ -10,7 +13,10 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const evaluateWritingSubmissionWithOpenAI = async (writingTaskId: string, extractedText: string): Promise<{ score: number; feedback: any }> => {
+const evaluateWritingSubmissionWithOpenAI = async (
+  writingTaskId: string,
+  extractedText: string,
+): Promise<{ score: number; feedback: any }> => {
   const writingTask = await WritingTaskServices.getSingleWritingTask(writingTaskId);
 
   if (!writingTask) {
@@ -36,7 +42,7 @@ ${extractedText}
     const chatCompletion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo', // Or 'gpt-4' for potentially better results
       messages: [{ role: 'user', content: prompt }],
-      response_format: { type: "json_object" },
+      response_format: { type: 'json_object' },
     });
 
     const responseContent = chatCompletion?.choices[0]?.message.content;
@@ -47,7 +53,10 @@ ${extractedText}
     const evaluationResult = JSON.parse(responseContent);
 
     if (typeof evaluationResult.score !== 'number' || !evaluationResult.feedback) {
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'OpenAI response did not contain expected score or feedback format.');
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        'OpenAI response did not contain expected score or feedback format.',
+      );
     }
 
     return {
@@ -56,11 +65,16 @@ ${extractedText}
     };
   } catch (error) {
     console.error('Error evaluating writing submission with OpenAI:', error);
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to evaluate writing submission with AI.');
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Failed to evaluate writing submission with AI.',
+    );
   }
 };
 
-const createWritingSubmission = async (payload: ICreateWritingSubmissionPayload): Promise<WritingSubmission> => {
+const createWritingSubmission = async (
+  payload: ICreateWritingSubmissionPayload,
+): Promise<WritingSubmission> => {
   try {
     const result = await prisma.writingSubmission.create({
       data: payload,
@@ -68,7 +82,10 @@ const createWritingSubmission = async (payload: ICreateWritingSubmissionPayload)
 
     // If extractedText is provided, evaluate it with AI
     if (result.extractedText && result.writingTaskId) {
-      const { score, feedback } = await evaluateWritingSubmissionWithOpenAI(result.writingTaskId, result.extractedText);
+      const { score, feedback } = await evaluateWritingSubmissionWithOpenAI(
+        result.writingTaskId,
+        result.extractedText,
+      );
 
       // Update the newly created submission with the AI-generated score and feedback
       const updatedResult = await prisma.writingSubmission.update({
@@ -80,8 +97,8 @@ const createWritingSubmission = async (payload: ICreateWritingSubmissionPayload)
       if (updatedResult.sessionId) {
         await prisma.session.update({
           where: { id: updatedResult.sessionId },
-          data: { 
-            score: updatedResult.score, 
+          data: {
+            score: updatedResult.score,
             feedback: updatedResult.feedback === null ? Prisma.JsonNull : updatedResult.feedback,
             endedAt: new Date().toISOString(),
           },
@@ -108,7 +125,10 @@ const getAllWritingSubmissions = async (options: {
   limit?: number;
   userId?: string;
   sessionId?: string;
-}): Promise<{ meta: { page: number; limit: number; total: number }; data: WritingSubmission[] }> => {
+}): Promise<{
+  meta: { page: number; limit: number; total: number };
+  data: WritingSubmission[];
+}> => {
   const { page = 1, limit = 10, userId, sessionId } = options;
   const skip = (page - 1) * limit;
 
@@ -169,7 +189,10 @@ const getSingleWritingSubmission = async (id: string): Promise<WritingSubmission
   }
 };
 
-const updateWritingSubmission = async (id: string, payload: IUpdateWritingSubmissionPayload): Promise<WritingSubmission> => {
+const updateWritingSubmission = async (
+  id: string,
+  payload: IUpdateWritingSubmissionPayload,
+): Promise<WritingSubmission> => {
   try {
     const result = await prisma.writingSubmission.update({
       where: {
@@ -180,7 +203,8 @@ const updateWritingSubmission = async (id: string, payload: IUpdateWritingSubmis
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to update not found
+      if (error.code === 'P2025') {
+        // Record to update not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Writing submission not found');
       }
     }
@@ -198,7 +222,8 @@ const deleteWritingSubmission = async (id: string): Promise<WritingSubmission> =
     return result;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') { // Record to delete not found
+      if (error.code === 'P2025') {
+        // Record to delete not found
         throw new ApiError(httpStatus.NOT_FOUND, 'Writing submission not found');
       }
     }

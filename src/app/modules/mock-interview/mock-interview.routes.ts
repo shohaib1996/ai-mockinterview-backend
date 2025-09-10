@@ -1,4 +1,3 @@
-
 import express from 'express';
 import auth from '@/app/middlewares/auth';
 import { Role } from '@prisma/client';
@@ -11,25 +10,25 @@ router.post(
   '/:sessionId/upload-questions',
   auth([Role.USER, Role.ADMIN]),
   uploadCsv.single('file'),
-  MockInterviewController.uploadQuestionsController
+  MockInterviewController.uploadQuestionsController,
 );
 
 router.post(
   '/:sessionId/chat',
   auth([Role.USER, Role.ADMIN]),
-  MockInterviewController.chatController
+  MockInterviewController.chatController,
 );
 
 router.get(
   '/:sessionId/history',
   auth([Role.USER, Role.ADMIN]),
-  MockInterviewController.getConversationHistoryController
+  MockInterviewController.getConversationHistoryController,
 );
 
 router.post(
   '/:sessionId/analyze',
   auth([Role.USER, Role.ADMIN]),
-  MockInterviewController.analyzeConversationController
+  MockInterviewController.analyzeConversationController,
 );
 
 export const MockInterviewRoutes = router;

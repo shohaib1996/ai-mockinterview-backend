@@ -1,18 +1,18 @@
-export type IConversation = {
-  role: "user" | "assistant";
+export interface IConversation {
+  role: 'user' | 'assistant';
   content: string;
-};
+}
 
 import { AIChatConversation } from '@prisma/client';
 
-export type ConversationMessage = {
+export interface ConversationMessage {
   role: 'user' | 'assistant';
   content: string;
-};
+}
 
-export type IChatCompletion = {
+export interface IChatCompletion {
   sessionId: string;
   conversation: ConversationMessage[];
-};
+}
 
 export type IAIChatConversation = AIChatConversation;

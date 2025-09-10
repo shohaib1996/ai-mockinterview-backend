@@ -11,32 +11,32 @@ router.post(
   '/',
   auth([Role.ADMIN]), // Only ADMIN can create
   validateRequest(ReadingPassageValidation.createReadingPassageZodSchema),
-  ReadingPassageController.createReadingPassageController
+  ReadingPassageController.createReadingPassageController,
 );
 
 router.get(
   '/',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can get all
-  ReadingPassageController.getAllReadingPassagesController
+  ReadingPassageController.getAllReadingPassagesController,
 );
 
 router.get(
   '/:id',
   auth([Role.USER, Role.ADMIN]), // USER and ADMIN can get single
-  ReadingPassageController.getSingleReadingPassageController
+  ReadingPassageController.getSingleReadingPassageController,
 );
 
 router.patch(
   '/:id',
   auth([Role.ADMIN]), // Only ADMIN can update
   validateRequest(ReadingPassageValidation.updateReadingPassageZodSchema),
-  ReadingPassageController.updateReadingPassageController
+  ReadingPassageController.updateReadingPassageController,
 );
 
 router.delete(
   '/:id',
   auth([Role.ADMIN]), // Only ADMIN can delete
-  ReadingPassageController.deleteReadingPassageController
+  ReadingPassageController.deleteReadingPassageController,
 );
 
 export const ReadingPassageRoutes = router;
