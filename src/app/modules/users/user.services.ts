@@ -163,9 +163,93 @@ const changeUserRole = async (userId: string, newRole: Role): Promise<IUser> => 
   }
 };
 
+const getProfile = async (userId: string): Promise<IUser | null> => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        avatarUrl: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return user;
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve profile');
+  }
+};
+
+const editProfile = async (userId: string, payload: Partial<User>): Promise<IUser | null> => {
+  try {
+    const { name, avatarUrl } = payload;
+
+    const data: { name?: string | null; avatarUrl?: string | null } = {};
+    if (typeof name !== 'undefined') data.name = name;
+    if (typeof avatarUrl !== 'undefined') data.avatarUrl = avatarUrl;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data,
+    });
+
+    const { password, ...userWithoutPassword } = updatedUser;
+
+    return userWithoutPassword;
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to update profile');
+  }
+};
+
+const resetPassword = async (
+  userId: string,
+  oldPassword: string,
+  newPassword: string,
+): Promise<void> => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    }
+
+    const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isPasswordMatch) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid credentials');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: hashedPassword,
+      },
+    });
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to reset password');
+  }
+};
+
 export const UserServices = {
   createUser,
   loginUser,
   getAllUsers,
   changeUserRole,
+  getProfile,
+  editProfile,
+  resetPassword,
 };

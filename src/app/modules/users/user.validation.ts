@@ -36,9 +36,25 @@ export const changeUserRoleZodSchema = z.object({
   }),
 });
 
+export const editProfileZodSchema = z.object({
+  body: z.object({
+    name: z.string().optional(),
+    avatarUrl: z.string().url().optional(),
+  }),
+});
+
+export const resetPasswordZodSchema = z.object({
+  body: z.object({
+    oldPassword: z.string(),
+    newPassword: z.string().min(6),
+  }),
+});
+
 export const UserValidation = {
   createUserZodSchema,
   loginUserZodSchema,
   getAllUsersZodSchema,
   changeUserRoleZodSchema,
+  editProfileZodSchema,
+  resetPasswordZodSchema,
 };

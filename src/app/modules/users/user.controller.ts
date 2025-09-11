@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { UserServices } from './user.services';
 import httpStatus from 'http-status';
 import catchAsync from '@/app/utils/catchAsync';
+import { User } from '@prisma/client';
 
 const createUserController = catchAsync(async (req: Request, res: Response) => {
   const result = await UserServices.createUser(req.body);
@@ -59,9 +60,47 @@ const changeUserRoleController = catchAsync(async (req: Request, res: Response) 
   });
 });
 
+const getProfileController = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user as User;
+
+  const result = await UserServices.getProfile(id);
+
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: 'Profile retrieved successfully',
+    data: result,
+  });
+});
+
+const editProfileController = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user as User;
+  const result = await UserServices.editProfile(id, req.body);
+
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: 'Profile updated successfully',
+    data: result,
+  });
+});
+
+const resetPasswordController = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user as User;
+  const { oldPassword, newPassword } = req.body;
+
+  await UserServices.resetPassword(id, oldPassword, newPassword);
+
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: 'Password reset successfully',
+  });
+});
+
 export const UserController = {
   createUserController,
   loginUserController,
   getAllUsersController,
   changeUserRoleController,
+  getProfileController,
+  editProfileController,
+  resetPasswordController,
 };
