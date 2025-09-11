@@ -7,6 +7,8 @@ import {
   getAllUsersZodSchema,
   loginUserZodSchema,
   changeUserRoleZodSchema,
+  editProfileZodSchema,
+  resetPasswordZodSchema,
 } from './user.validation';
 import auth from '@/app/middlewares/auth';
 import { Role } from '@prisma/client';
@@ -15,6 +17,20 @@ const router = express.Router();
 
 router.post('/register', validateRequest(createUserZodSchema), UserController.createUserController);
 router.post('/login', validateRequest(loginUserZodSchema), UserController.loginUserController);
+
+router.get('/profile', auth([Role.ADMIN, Role.USER]), UserController.getProfileController);
+router.patch(
+  '/profile',
+  validateRequest(editProfileZodSchema),
+  auth([Role.ADMIN, Role.USER]),
+  UserController.editProfileController,
+);
+router.post(
+  '/reset-password',
+  validateRequest(resetPasswordZodSchema),
+  auth([Role.ADMIN, Role.USER]),
+  UserController.resetPasswordController,
+);
 
 router.get(
   '/',
@@ -31,3 +47,4 @@ router.patch(
 );
 
 export const UserRoutes = router;
+
