@@ -21,6 +21,7 @@ import { WritingTaskRoutes } from '../modules/writingTask/writingTask.routes';
 import { AdminDashboardRoutes } from '../modules/adminDashboard/adminDashboard.routes';
 import { ReadingTestRoutes } from '../modules/readingTest/readingTest.routes';
 import { ContentPoolRoutes } from '../modules/contentPool/contentPool.routes';
+import { ListeningTestRoutes } from '../modules/listeningTest/listeningTest.routes';
 
 const moduleRoutes = [
   {
@@ -98,6 +99,10 @@ const moduleRoutes = [
   {
     path: '/content-pool',
     route: ContentPoolRoutes,
+  },
+  {
+    path: '/listening-tests',
+    route: ListeningTestRoutes,
   },
 ];
 

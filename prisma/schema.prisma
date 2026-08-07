@@ -37,6 +37,13 @@ enum GenerationStatus {
   FAILED
 }
 
+enum ListeningContext {
+  SOCIAL_CONVERSATION
+  SOCIAL_MONOLOGUE
+  EDUCATIONAL_CONVERSATION
+  ACADEMIC_MONOLOGUE
+}
+
 enum IELTSWritingTaskType {
   TASK1
   TASK2
@@ -81,8 +88,19 @@ model Session {
   customQuestions       CustomQuestion[]
   readingTest           ReadingTest?            @relation(fields: [readingTestId], references: [id])
   readingTestId         String?
+  listeningTest         ListeningTest?          @relation(fields: [listeningTestId], references: [id])
+  listeningTestId       String?
 
   @@index([userId])
+}
+
+model ListeningTest {
+  id         String           @id @default(cuid())
+  title      String
+  difficulty Difficulty       @default(MEDIUM)
+  createdAt  DateTime         @default(now())
+  sections   ListeningAudio[]
+  sessions   Session[]
 }
 
 model ListeningAudio {
@@ -93,6 +111,10 @@ model ListeningAudio {
   createdAt             DateTime                @default(now())
   questions             Question[]
   userCompletionHistory UserCompletionHistory[]
+  listeningTest         ListeningTest?          @relation(fields: [listeningTestId], references: [id])
+  listeningTestId       String?
+  order                 Int?
+  context               ListeningContext?
 }
 
 model ReadingTest {

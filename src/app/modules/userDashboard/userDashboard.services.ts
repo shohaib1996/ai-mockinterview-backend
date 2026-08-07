@@ -148,6 +148,7 @@ const getUserDashboardData = async (userId: string) => {
           transcript: string | null;
           feedback: Prisma.JsonValue | null;
           readingTestId: string | null;
+          listeningTestId: string | null;
         } => s.type === SessionType.IELTS_LISTENING && s.startedAt !== null && s.score !== null,
       )
       .map((s) => ({ date: s.startedAt, score: s.score })),
@@ -165,6 +166,7 @@ const getUserDashboardData = async (userId: string) => {
           transcript: string | null;
           feedback: Prisma.JsonValue | null;
           readingTestId: string | null;
+          listeningTestId: string | null;
         } => s.type === SessionType.IELTS_READING && s.startedAt !== null && s.score !== null,
       )
       .map((s) => ({ date: s.startedAt, score: s.score })),
@@ -200,6 +202,7 @@ const getUserDashboardData = async (userId: string) => {
           transcript: string | null;
           feedback: Prisma.JsonValue | null;
           readingTestId: string | null;
+          listeningTestId: string | null;
         } => s.type === SessionType.IELTS_SPEAKING && s.startedAt !== null && s.score !== null,
       )
       .map((s) => ({ date: s.startedAt, score: s.score })),
