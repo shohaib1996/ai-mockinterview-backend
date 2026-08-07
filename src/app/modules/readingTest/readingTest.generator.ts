@@ -100,7 +100,7 @@ const generateReadingTest = async (difficulty: Difficulty = 'MEDIUM') => {
               sessionType: SessionType.IELTS_READING,
               text: q.text,
               options: q.options ?? [],
-              correctAnswer: q.correctAnswer,
+              correctAnswer: q.correctAnswer ?? null,
               acceptableAnswers: q.acceptableAnswers ?? [],
               difficulty: q.difficulty ?? difficulty,
               aiGenerated: true,
