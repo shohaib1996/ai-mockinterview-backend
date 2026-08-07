@@ -53,6 +53,27 @@ const assignReadingTest = async (userId: string) => {
   return { session, readingTest };
 };
 
+const getReadingTestBySession = async (sessionId: string, userId: string) => {
+  const session = await prisma.session.findUnique({ where: { id: sessionId } });
+
+  if (!session) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Session not found');
+  }
+  if (session.userId !== userId) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'This session does not belong to you');
+  }
+  if (!session.readingTestId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Session has no reading test assigned');
+  }
+
+  const readingTest = await prisma.readingTest.findUniqueOrThrow({
+    where: { id: session.readingTestId },
+    include: readingTestInclude,
+  });
+
+  return { session, readingTest };
+};
+
 const submitReadingTest = async (
   sessionId: string,
   userId: string,
@@ -139,4 +160,9 @@ const ensurePool = async (difficulty: Difficulty) => {
   return { alreadySufficient: false, generated };
 };
 
-export const ReadingTestServices = { assignReadingTest, submitReadingTest, ensurePool };
+export const ReadingTestServices = {
+  assignReadingTest,
+  getReadingTestBySession,
+  submitReadingTest,
+  ensurePool,
+};

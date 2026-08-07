@@ -15,6 +15,20 @@ const startReadingTest = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getReadingTest = catchAsync(async (req: Request, res: Response) => {
+  const { id: userId } = req.user as User;
+  const { sessionId } = req.params;
+  if (!sessionId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Session ID is required');
+  }
+  const result = await ReadingTestServices.getReadingTestBySession(sessionId, userId);
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: 'Reading test retrieved',
+    data: result,
+  });
+});
+
 const submitReadingTest = catchAsync(async (req: Request, res: Response) => {
   const { id: userId } = req.user as User;
   const { sessionId } = req.params;
@@ -30,4 +44,4 @@ const submitReadingTest = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const ReadingTestController = { startReadingTest, submitReadingTest };
+export const ReadingTestController = { startReadingTest, getReadingTest, submitReadingTest };

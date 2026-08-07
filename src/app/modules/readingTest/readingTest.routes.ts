@@ -6,6 +6,7 @@ import { ReadingTestController } from './readingTest.controller';
 const router = express.Router();
 
 router.post('/start', auth([Role.USER, Role.ADMIN]), ReadingTestController.startReadingTest);
+router.get('/:sessionId', auth([Role.USER, Role.ADMIN]), ReadingTestController.getReadingTest);
 router.post(
   '/:sessionId/submit',
   auth([Role.USER, Role.ADMIN]),
