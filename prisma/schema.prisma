@@ -44,6 +44,18 @@ enum ListeningContext {
   ACADEMIC_MONOLOGUE
 }
 
+model SpeakingTest {
+  id             String     @id @default(cuid())
+  part1Topic     String
+  part1Questions String[]
+  cueCardTopic   String
+  cueCardBullets String[]
+  part3Questions String[]
+  difficulty     Difficulty @default(MEDIUM)
+  createdAt      DateTime   @default(now())
+  sessions       Session[]
+}
+
 enum IELTSWritingTaskType {
   TASK1
   TASK2
@@ -90,6 +102,8 @@ model Session {
   readingTestId         String?
   listeningTest         ListeningTest?          @relation(fields: [listeningTestId], references: [id])
   listeningTestId       String?
+  speakingTest          SpeakingTest?           @relation(fields: [speakingTestId], references: [id])
+  speakingTestId        String?
 
   @@index([userId])
 }

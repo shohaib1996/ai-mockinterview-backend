@@ -6,6 +6,7 @@ import { ApiError } from '@/app/errors/apiError';
 import { ReadingTestServices } from '@/app/modules/readingTest/readingTest.services';
 import { ListeningTestServices } from '@/app/modules/listeningTest/listeningTest.services';
 import { WritingTestServices } from '@/app/modules/writingTest/writingTest.services';
+import { SpeakingTestServices } from '@/app/modules/speakingTest/speakingTest.services';
 import { Difficulty, SessionType } from '@prisma/client';
 
 const getPoolStatus = catchAsync(async (req: Request, res: Response) => {
@@ -21,6 +22,10 @@ const getPoolStatus = catchAsync(async (req: Request, res: Response) => {
     by: ['difficulty', 'task'],
     _count: { _all: true },
     where: { difficulty: { not: null } },
+  });
+  const speakingCounts = await prisma.speakingTest.groupBy({
+    by: ['difficulty'],
+    _count: { _all: true },
   });
   const recentLogs = await prisma.generationLog.findMany({
     orderBy: { createdAt: 'desc' },
@@ -38,6 +43,7 @@ const getPoolStatus = catchAsync(async (req: Request, res: Response) => {
         task: c.task,
         count: c._count._all,
       })),
+      speaking: speakingCounts.map((c) => ({ difficulty: c.difficulty, count: c._count._all })),
       recentLogs,
     },
   });
@@ -69,6 +75,15 @@ const generateNow = catchAsync(async (req: Request, res: Response) => {
     return res.status(httpStatus.OK).json({
       success: true,
       message: 'Writing pool generation triggered',
+      data: result,
+    });
+  }
+
+  if (skill === SessionType.IELTS_SPEAKING) {
+    const result = await SpeakingTestServices.ensurePool(difficulty ?? 'MEDIUM');
+    return res.status(httpStatus.OK).json({
+      success: true,
+      message: 'Speaking pool generation triggered',
       data: result,
     });
   }

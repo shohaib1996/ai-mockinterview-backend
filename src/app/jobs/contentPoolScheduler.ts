@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { ReadingTestServices } from '@/app/modules/readingTest/readingTest.services';
 import { ListeningTestServices } from '@/app/modules/listeningTest/listeningTest.services';
 import { WritingTestServices } from '@/app/modules/writingTest/writingTest.services';
+import { SpeakingTestServices } from '@/app/modules/speakingTest/speakingTest.services';
 import { Difficulty } from '@prisma/client';
 
 const DIFFICULTIES: Difficulty[] = ['LOW', 'MEDIUM', 'HIGH'];
@@ -11,6 +12,7 @@ const topUpAllPools = async () => {
     await ReadingTestServices.ensurePool(difficulty);
     await ListeningTestServices.ensurePool(difficulty);
     await WritingTestServices.ensurePool(difficulty);
+    await SpeakingTestServices.ensurePool(difficulty);
   }
 };
 

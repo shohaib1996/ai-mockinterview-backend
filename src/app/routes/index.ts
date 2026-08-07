@@ -14,7 +14,6 @@ import { WritingSubmissionRoutes } from '../modules/writingSubmission/writingSub
 import { UserProgressRoutes } from '../modules/userProgress/userProgress.routes';
 import { FileUploadRoutes } from '../modules/file-upload/file-upload.routes';
 import { TextExtractionRoutes } from '../modules/text-extraction/text-extraction.routes';
-import { AiChatRoutes } from '../modules/ai-chat/ai-chat.routes';
 import { MockInterviewRoutes } from '../modules/mock-interview/mock-interview.routes';
 import { UserDashboardRoutes } from '../modules/userDashboard/userDashboard.routes';
 import { WritingTaskRoutes } from '../modules/writingTask/writingTask.routes';
@@ -23,12 +22,9 @@ import { ReadingTestRoutes } from '../modules/readingTest/readingTest.routes';
 import { ContentPoolRoutes } from '../modules/contentPool/contentPool.routes';
 import { ListeningTestRoutes } from '../modules/listeningTest/listeningTest.routes';
 import { WritingTestRoutes } from '../modules/writingTest/writingTest.routes';
+import { SpeakingTestRoutes } from '../modules/speakingTest/speakingTest.routes';
 
 const moduleRoutes = [
-  {
-    path: '/ai-chat',
-    route: AiChatRoutes,
-  },
   {
     path: '/mock-interview',
     route: MockInterviewRoutes,
@@ -108,6 +104,10 @@ const moduleRoutes = [
   {
     path: '/writing-tests',
     route: WritingTestRoutes,
+  },
+  {
+    path: '/speaking-tests',
+    route: SpeakingTestRoutes,
   },
 ];
 
