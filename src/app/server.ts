@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import app from './app';
 import config from './config';
 import prisma from './lib/prisma';
+import { startContentPoolScheduler } from './jobs/contentPoolScheduler';
 
 dotenv.config();
 
@@ -18,6 +19,8 @@ async function main() {
   app.listen(port, () => {
     console.log(`Server listening on http://localhost:${port}`);
   });
+
+  startContentPoolScheduler();
 }
 
 main();

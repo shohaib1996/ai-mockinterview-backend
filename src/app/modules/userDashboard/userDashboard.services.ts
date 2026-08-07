@@ -147,6 +147,7 @@ const getUserDashboardData = async (userId: string) => {
           score: number;
           transcript: string | null;
           feedback: Prisma.JsonValue | null;
+          readingTestId: string | null;
         } => s.type === SessionType.IELTS_LISTENING && s.startedAt !== null && s.score !== null,
       )
       .map((s) => ({ date: s.startedAt, score: s.score })),

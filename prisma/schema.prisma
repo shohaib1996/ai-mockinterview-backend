@@ -79,6 +79,8 @@ model Session {
   aiChatConversations   AIChatConversation[]
   userCompletionHistory UserCompletionHistory[]
   customQuestions       CustomQuestion[]
+  readingTest           ReadingTest?            @relation(fields: [readingTestId], references: [id])
+  readingTestId         String?
 
   @@index([userId])
 }
@@ -93,6 +95,15 @@ model ListeningAudio {
   userCompletionHistory UserCompletionHistory[]
 }
 
+model ReadingTest {
+  id         String           @id @default(cuid())
+  title      String
+  difficulty Difficulty       @default(MEDIUM)
+  createdAt  DateTime         @default(now())
+  passages   ReadingPassage[]
+  sessions   Session[]
+}
+
 model ReadingPassage {
   id                    String                  @id @default(cuid())
   title                 String
@@ -100,6 +111,9 @@ model ReadingPassage {
   createdAt             DateTime                @default(now())
   questions             Question[]
   userCompletionHistory UserCompletionHistory[]
+  readingTest           ReadingTest?            @relation(fields: [readingTestId], references: [id])
+  readingTestId         String?
+  order                 Int?
 }
 
 model Question {

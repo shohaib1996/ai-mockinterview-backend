@@ -19,6 +19,8 @@ import { MockInterviewRoutes } from '../modules/mock-interview/mock-interview.ro
 import { UserDashboardRoutes } from '../modules/userDashboard/userDashboard.routes';
 import { WritingTaskRoutes } from '../modules/writingTask/writingTask.routes';
 import { AdminDashboardRoutes } from '../modules/adminDashboard/adminDashboard.routes';
+import { ReadingTestRoutes } from '../modules/readingTest/readingTest.routes';
+import { ContentPoolRoutes } from '../modules/contentPool/contentPool.routes';
 
 const moduleRoutes = [
   {
@@ -88,6 +90,14 @@ const moduleRoutes = [
   {
     path: '/writing-tasks',
     route: WritingTaskRoutes,
+  },
+  {
+    path: '/reading-tests',
+    route: ReadingTestRoutes,
+  },
+  {
+    path: '/content-pool',
+    route: ContentPoolRoutes,
   },
 ];
 

@@ -1,8 +1,24 @@
-import { Prisma, Answer } from '@prisma/client';
+import { Prisma, Answer, Question } from '@prisma/client';
 import httpStatus from 'http-status';
 import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
 import { ICreateAnswerPayload, IUpdateAnswerPayload } from './answer.interface';
+
+const normalizeAnswerText = (text: string) =>
+  text
+    .trim()
+    .toLowerCase()
+    .replace(/[.,!?;:'"]/g, '')
+    .replace(/\s+/g, ' ');
+
+const gradeObjectiveAnswer = (question: Question, answerText: string | null | undefined): boolean => {
+  if (!answerText) return false;
+  const given = normalizeAnswerText(answerText);
+  const accepted = [question.correctAnswer, ...(question.acceptableAnswers ?? [])]
+    .filter((a): a is string => !!a)
+    .map(normalizeAnswerText);
+  return accepted.includes(given);
+};
 
 const createAnswer = async (
   payload: ICreateAnswerPayload | ICreateAnswerPayload[],
@@ -119,4 +135,5 @@ export const AnswerServices = {
   getSingleAnswer,
   updateAnswer,
   deleteAnswer,
+  gradeObjectiveAnswer,
 };
