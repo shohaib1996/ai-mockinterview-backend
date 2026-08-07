@@ -183,6 +183,8 @@ const getUserDashboardData = async (userId: string) => {
           imageUrl: string;
           extractedText: string | null;
           score: number;
+          criteriaScores: Prisma.JsonValue | null;
+          wordCount: number | null;
           feedback: Prisma.JsonValue | null;
           createdAt: Date;
         } => s.createdAt !== null && s.score !== null,

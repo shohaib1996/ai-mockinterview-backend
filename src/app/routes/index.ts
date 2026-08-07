@@ -22,6 +22,7 @@ import { AdminDashboardRoutes } from '../modules/adminDashboard/adminDashboard.r
 import { ReadingTestRoutes } from '../modules/readingTest/readingTest.routes';
 import { ContentPoolRoutes } from '../modules/contentPool/contentPool.routes';
 import { ListeningTestRoutes } from '../modules/listeningTest/listeningTest.routes';
+import { WritingTestRoutes } from '../modules/writingTest/writingTest.routes';
 
 const moduleRoutes = [
   {
@@ -103,6 +104,10 @@ const moduleRoutes = [
   {
     path: '/listening-tests',
     route: ListeningTestRoutes,
+  },
+  {
+    path: '/writing-tests',
+    route: WritingTestRoutes,
   },
 ];
 

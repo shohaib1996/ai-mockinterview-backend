@@ -210,22 +210,25 @@ model WritingTask {
   task               IELTSWritingTaskType
   promptText         String
   imageUrl           String?
+  chartConfig        Json?
   difficulty         Difficulty?
   writingSubmissions WritingSubmission[]
 }
 
 model WritingSubmission {
-  id            String      @id @default(cuid())
-  user          User        @relation(fields: [userId], references: [id])
-  userId        String
-  session       Session?    @relation(fields: [sessionId], references: [id])
-  sessionId     String?
-  writingTask   WritingTask @relation(fields: [writingTaskId], references: [id])
-  writingTaskId String
-  extractedText String?
-  score         Float?
-  feedback      Json?
-  createdAt     DateTime    @default(now())
+  id             String      @id @default(cuid())
+  user           User        @relation(fields: [userId], references: [id])
+  userId         String
+  session        Session?    @relation(fields: [sessionId], references: [id])
+  sessionId      String?
+  writingTask    WritingTask @relation(fields: [writingTaskId], references: [id])
+  writingTaskId  String
+  extractedText  String?
+  score          Float?
+  criteriaScores Json?
+  wordCount      Int?
+  feedback       Json?
+  createdAt      DateTime    @default(now())
 }
 
 model UserProgress {
