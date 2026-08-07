@@ -26,6 +26,15 @@ enum SessionType {
 enum QuestionType {
   MCQ
   OPEN_ENDED
+  TRUE_FALSE_NOT_GIVEN
+  MATCHING
+  COMPLETION
+  SHORT_ANSWER
+}
+
+enum GenerationStatus {
+  SUCCESS
+  FAILED
 }
 
 enum IELTSWritingTaskType {
@@ -100,6 +109,7 @@ model Question {
   text             String
   options          String[]
   correctAnswer    String?
+  acceptableAnswers String[]
   difficulty       Difficulty       @default(MEDIUM)
   aiGenerated      Boolean          @default(false)
   createdAt        DateTime         @default(now())
@@ -229,4 +239,15 @@ model UserCompletionHistory {
 
   @@unique([userId, listeningAudioId])
   @@unique([userId, readingPassageId])
+}
+
+model GenerationLog {
+  id           String            @id @default(cuid())
+  skill        SessionType
+  difficulty   Difficulty
+  status       GenerationStatus
+  errorMessage String?
+  createdAt    DateTime          @default(now())
+
+  @@index([skill, createdAt])
 }
