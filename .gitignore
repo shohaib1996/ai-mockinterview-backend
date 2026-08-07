@@ -6,3 +6,6 @@ dist
 /src/generated/prisma
 
 src\app\config\ai-form-builder-465213-c9819f6f193b.json
+temp_auto_push.bat
+temp_interactive_push.bat
+branch_structure.json
