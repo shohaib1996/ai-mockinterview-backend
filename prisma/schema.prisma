@@ -31,6 +31,7 @@ enum QuestionType {
   MATCHING
   COMPLETION
   SHORT_ANSWER
+  DIAGRAM_LABEL
 }
 
 enum GenerationStatus {
@@ -162,6 +163,7 @@ model Question {
   options          String[]
   correctAnswer    String?
   acceptableAnswers String[]
+  imageUrl         String?
   difficulty       Difficulty       @default(MEDIUM)
   aiGenerated      Boolean          @default(false)
   createdAt        DateTime         @default(now())

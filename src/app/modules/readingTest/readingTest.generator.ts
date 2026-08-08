@@ -3,6 +3,7 @@ import config from '@/app/config';
 import prisma from '@/app/lib/prisma';
 import { Difficulty, SessionType } from '@prisma/client';
 import { IGeneratedReadingTest } from './readingTest.interface';
+import { diagramSpecToImageUrl } from '@/app/utils/diagramRenderer';
 
 const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
@@ -50,6 +51,28 @@ test, not just MCQ:
   WORDS from the passage". correctAnswer must obey that same limit.
 - SHORT_ANSWER: no options. State a word limit in the question text (e.g. "NO MORE THAN THREE
   WORDS"), and correctAnswer must obey it, taken verbatim from the passage.
+- DIAGRAM_LABEL: only used inside passage 2, which must also carry a "diagram" object (see below).
+  No options. The question text asks what belongs at one specific numbered position, e.g. "What is
+  located at position 3 on the diagram?". correctAnswer is a short word/phrase from the passage
+  that correctly identifies that position. Set "blankNumber" to the matching shape's blankNumber.
+
+Passage 2 must additionally describe, and include a diagram for, either (a) a physical place with
+distinct areas/rooms (a building, site, or facility), or (b) a simple sequential process or
+mechanism — whichever fits the passage's topic better. Include a "diagram" object on passage 2:
+{
+  "type": "floorplan" | "process",
+  "title": "string",
+  "shapes": [
+    { "id": "string", "x": 0-100, "y": 0-100, "width": 0-100, "height": 0-100, "label": "string" },
+    { "id": "string", "x": 0-100, "y": 0-100, "width": 0-100, "height": 0-100, "blankNumber": 1 }
+  ],
+  "connections": [{ "fromId": "string", "toId": "string" }]
+}
+Use 4-8 shapes for a floorplan (a mix of pre-labeled shapes for orientation and 3-5 numbered
+blanks), or 3-6 shapes with "connections" between them in sequence for a process (label the start
+and end shapes, numbered-blank the middle steps). x/y/width/height are percentages of the canvas —
+lay shapes out so they don't overlap. Add exactly one DIAGRAM_LABEL question per numbered blank
+shape, and reduce passage 2's other question types slightly so the total is still about 13.
 
 For every question also provide "acceptableAnswers": a short array of alternative spellings or
 phrasings that should also count as correct (can be an empty array).
@@ -62,19 +85,22 @@ Respond ONLY with a JSON object in this exact shape:
       "order": 1,
       "title": "string",
       "content": "string (the full passage text)",
+      "diagram": { "type": "floorplan" | "process", "title": "string", "shapes": [], "connections": [] },
       "questions": [
         {
-          "type": "MCQ" | "TRUE_FALSE_NOT_GIVEN" | "YES_NO_NOT_GIVEN" | "MATCHING" | "COMPLETION" | "SHORT_ANSWER",
+          "type": "MCQ" | "TRUE_FALSE_NOT_GIVEN" | "YES_NO_NOT_GIVEN" | "MATCHING" | "COMPLETION" | "SHORT_ANSWER" | "DIAGRAM_LABEL",
           "text": "string",
           "options": ["string"],
           "correctAnswer": "string",
           "acceptableAnswers": ["string"],
+          "blankNumber": 1,
           "difficulty": "LOW" | "MEDIUM" | "HIGH"
         }
       ]
     }
   ]
-}`;
+}
+Omit "diagram" entirely for passages 1 and 3, and omit "blankNumber" for non-DIAGRAM_LABEL questions.`;
 
 const generateReadingTest = async (difficulty: Difficulty = 'MEDIUM') => {
   const topic = pickTopic();
@@ -107,23 +133,28 @@ const generateReadingTest = async (difficulty: Difficulty = 'MEDIUM') => {
       title: parsed.title,
       difficulty,
       passages: {
-        create: parsed.passages.map((passage) => ({
-          title: passage.title,
-          content: passage.content,
-          order: passage.order,
-          questions: {
-            create: passage.questions.map((q) => ({
-              type: q.type,
-              sessionType: SessionType.IELTS_READING,
-              text: q.text,
-              options: q.options ?? [],
-              correctAnswer: q.correctAnswer ?? null,
-              acceptableAnswers: q.acceptableAnswers ?? [],
-              difficulty: q.difficulty ?? difficulty,
-              aiGenerated: true,
-            })),
-          },
-        })),
+        create: parsed.passages.map((passage) => {
+          const diagramImageUrl = passage.diagram ? diagramSpecToImageUrl(passage.diagram) : null;
+
+          return {
+            title: passage.title,
+            content: passage.content,
+            order: passage.order,
+            questions: {
+              create: passage.questions.map((q) => ({
+                type: q.type,
+                sessionType: SessionType.IELTS_READING,
+                text: q.text,
+                options: q.options ?? [],
+                correctAnswer: q.correctAnswer ?? null,
+                acceptableAnswers: q.acceptableAnswers ?? [],
+                imageUrl: q.type === 'DIAGRAM_LABEL' ? diagramImageUrl : null,
+                difficulty: q.difficulty ?? difficulty,
+                aiGenerated: true,
+              })),
+            },
+          };
+        }),
       },
     },
   });
