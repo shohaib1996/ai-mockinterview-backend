@@ -6,7 +6,7 @@ import { WritingTaskGenerator } from '../writingTask/writingTask.generator';
 import { WritingGraderService } from '../writingTask/writingGrader.service';
 import { ISubmitWritingTest } from './writingTest.interface';
 
-const MIN_POOL_SIZE_PER_DIFFICULTY = 5;
+const MIN_POOL_SIZE_PER_DIFFICULTY = 3;
 
 const assignTask = async (userId: string, task: IELTSWritingTaskType) => {
   const completedTaskIds = (

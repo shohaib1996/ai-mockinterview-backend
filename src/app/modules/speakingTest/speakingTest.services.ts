@@ -10,7 +10,7 @@ import { SpeakingGraderService } from './speakingGrader.service';
 import { IChatPayload, IStoredMessage, ISubmitPart2Payload } from './speakingTest.interface';
 
 const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
-const MIN_POOL_SIZE_PER_DIFFICULTY = 5;
+const MIN_POOL_SIZE_PER_DIFFICULTY = 3;
 
 const assignSpeakingTest = async (userId: string) => {
   const completedTestIds = (
@@ -120,7 +120,10 @@ next question verbatim (do not modify it): "${nextQuestion}"`;
   ];
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    // This call only rephrases/relays a pre-written question with a brief
+    // acknowledgment - not generating exam content - so the cheaper model
+    // is plenty, and it's called on every conversational turn.
+    model: 'gpt-4o-mini',
     messages,
   });
 

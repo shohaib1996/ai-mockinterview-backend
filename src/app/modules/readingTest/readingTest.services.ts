@@ -7,7 +7,7 @@ import { AnswerServices } from '../answer/answer.services';
 import { rawScoreToReadingBand } from '@/app/utils/bandConversion';
 import { ISubmitReadingAnswer } from './readingTest.interface';
 
-const MIN_POOL_SIZE_PER_DIFFICULTY = 5;
+const MIN_POOL_SIZE_PER_DIFFICULTY = 3;
 
 const readingTestInclude = {
   passages: {

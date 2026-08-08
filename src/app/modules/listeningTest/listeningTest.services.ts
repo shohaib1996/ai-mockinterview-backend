@@ -7,7 +7,7 @@ import { AnswerServices } from '../answer/answer.services';
 import { rawScoreToListeningBand } from '@/app/utils/bandConversion';
 import { ISubmitListeningAnswer } from './listeningTest.interface';
 
-const MIN_POOL_SIZE_PER_DIFFICULTY = 5;
+const MIN_POOL_SIZE_PER_DIFFICULTY = 3;
 
 const listeningTestInclude = {
   sections: {
