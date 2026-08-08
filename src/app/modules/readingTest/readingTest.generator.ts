@@ -154,10 +154,15 @@ const requestReadingTest = async (
     throw new Error('Invalid reading test format received from OpenAI: expected exactly 3 passages');
   }
 
+  // The real exam is always exactly 40, but gpt-4o-mini doesn't reliably hit
+  // that exact number - demanding it wasted most attempts on near-misses
+  // (38, 39). Accept anything reasonably close instead of retrying until
+  // it's exact.
+  const MIN_ACCEPTABLE_QUESTIONS = 36;
   const totalQuestions = parsed.passages.reduce((sum, p) => sum + (p.questions?.length ?? 0), 0);
-  if (totalQuestions !== 40) {
+  if (totalQuestions < MIN_ACCEPTABLE_QUESTIONS) {
     throw new Error(
-      `Invalid reading test format received from OpenAI: expected 40 questions total, got ${totalQuestions}`,
+      `Invalid reading test format received from OpenAI: expected at least ${MIN_ACCEPTABLE_QUESTIONS} questions total, got ${totalQuestions}`,
     );
   }
 

@@ -179,9 +179,13 @@ const requestListeningSection = async (
   if (!Array.isArray(parsed.script) || parsed.script.length === 0) {
     throw new Error(`Invalid listening section ${spec.order}: empty script`);
   }
-  if (!Array.isArray(parsed.questions) || parsed.questions.length !== 10) {
+  // The real exam is always exactly 10 per section, but gpt-4o-mini doesn't
+  // reliably hit that exact number - accept a near-miss (9) instead of
+  // retrying until it's exact, same tolerance as the reading generator.
+  const MIN_ACCEPTABLE_QUESTIONS = 9;
+  if (!Array.isArray(parsed.questions) || parsed.questions.length < MIN_ACCEPTABLE_QUESTIONS) {
     throw new Error(
-      `Invalid listening section ${spec.order}: expected exactly 10 questions, got ${parsed.questions?.length ?? 0}`,
+      `Invalid listening section ${spec.order}: expected at least ${MIN_ACCEPTABLE_QUESTIONS} questions, got ${parsed.questions?.length ?? 0}`,
     );
   }
   validateGeneratedQuestions(parsed.questions, `Listening section ${spec.order}`);
