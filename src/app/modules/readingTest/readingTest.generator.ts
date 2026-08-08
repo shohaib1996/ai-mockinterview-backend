@@ -4,6 +4,7 @@ import prisma from '@/app/lib/prisma';
 import { Difficulty, SessionType } from '@prisma/client';
 import { IGeneratedReadingTest } from './readingTest.interface';
 import { diagramSpecToImageUrl } from '@/app/utils/diagramRenderer';
+import { validateGeneratedQuestions } from '@/app/utils/validateGeneratedQuestion';
 
 const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
@@ -22,7 +23,7 @@ const TOPICS = [
   'linguistics',
 ];
 
-const pickTopic = () => TOPICS[Math.floor(Math.random() * TOPICS.length)];
+const pickTopic = () => TOPICS[Math.floor(Math.random() * TOPICS.length)] ?? TOPICS[0]!;
 
 const SYSTEM_PROMPT = `You are an IELTS Academic Reading test writer. Generate a full reading test
 matching the real IELTS Academic Reading format: exactly 3 passages of increasing difficulty
@@ -117,9 +118,16 @@ Respond ONLY with a JSON object in this exact shape:
 }
 Omit "diagram" entirely for passages 1 and 3, and omit "blankNumber" for non-DIAGRAM_LABEL questions.`;
 
-const generateReadingTest = async (difficulty: Difficulty = 'MEDIUM') => {
-  const topic = pickTopic();
+// gpt-4o-mini doesn't reliably hit the exact 40-question / 13-13-14 split on
+// the first try (it tends to land at 36-39), but retries are cheap on the
+// mini model - so retry a few times before giving up, instead of paying for
+// gpt-4o just to get consistent counts.
+const MAX_GENERATION_ATTEMPTS = 4;
 
+const requestReadingTest = async (
+  difficulty: Difficulty,
+  topic: string,
+): Promise<IGeneratedReadingTest> => {
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     response_format: { type: 'json_object' },
@@ -147,6 +155,33 @@ const generateReadingTest = async (difficulty: Difficulty = 'MEDIUM') => {
   if (totalQuestions !== 40) {
     throw new Error(
       `Invalid reading test format received from OpenAI: expected 40 questions total, got ${totalQuestions}`,
+    );
+  }
+
+  parsed.passages.forEach((passage) => {
+    validateGeneratedQuestions(passage.questions, `Reading passage ${passage.order}`);
+  });
+
+  return parsed;
+};
+
+const generateReadingTest = async (difficulty: Difficulty = 'MEDIUM') => {
+  const topic = pickTopic();
+
+  let parsed: IGeneratedReadingTest | undefined;
+  let lastError: Error | undefined;
+  for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
+    try {
+      parsed = await requestReadingTest(difficulty, topic);
+      break;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown reading generation error');
+    }
+  }
+
+  if (!parsed) {
+    throw new Error(
+      `Reading test generation failed after ${MAX_GENERATION_ATTEMPTS} attempts: ${lastError?.message}`,
     );
   }
 
