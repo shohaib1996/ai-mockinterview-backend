@@ -41,11 +41,19 @@ matching the real IELTS format: exactly 4 sections of increasing difficulty.
 Each section's "script" is an array of spoken turns ({"speaker": "A"|"B"|"C"|"D", "text": "..."}).
 Keep the combined spoken text of a section under 3000 characters so it fits one audio synthesis call.
 
-Each section must have about 10 questions, mixing these types:
+Each section must have about 10 questions, mixing these types. Questions within a section must
+follow the same order as the information appears in the audio script (the answer to question 1
+must come before the answer to question 2, and so on):
 - MCQ: 4 options, correctAnswer is one of them.
-- COMPLETION: fill-in-the-blank (form/note/table/summary completion), no options, correctAnswer is the missing word(s).
-- SHORT_ANSWER: no options, correctAnswer is no more than three words.
+- COMPLETION: fill-in-the-blank (form/note/table/summary completion). No options. State a word
+  limit directly in the question text, e.g. "Write NO MORE THAN TWO WORDS AND/OR A NUMBER".
+  correctAnswer must be taken verbatim from the script (same word form/tense) and obey that limit.
+- SHORT_ANSWER: no options. State a word limit in the question text (e.g. "NO MORE THAN THREE
+  WORDS"), and correctAnswer must obey it, taken verbatim from the script.
 - MATCHING: options is a list to match against, correctAnswer is the matching option text.
+
+Never require a contracted word (e.g. "they're") as an answer, and prefer hyphenated compounds
+counted as one word where natural.
 
 For every question also provide "acceptableAnswers": alternative spellings/phrasings that should
 also count as correct (can be an empty array).
@@ -90,7 +98,7 @@ const generateListeningTest = async (difficulty: Difficulty = 'MEDIUM') => {
   const topic = pickTopic();
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     response_format: { type: 'json_object' },
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },

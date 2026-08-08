@@ -25,14 +25,31 @@ const pickTopic = () => TOPICS[Math.floor(Math.random() * TOPICS.length)];
 
 const SYSTEM_PROMPT = `You are an IELTS Academic Reading test writer. Generate a full reading test
 matching the real IELTS Academic Reading format: exactly 3 passages of increasing difficulty
-(passage 1 easiest, passage 3 hardest), each 650-850 words, journal/article style.
+(passage 1 easiest, passage 3 hardest), each 650-850 words, long-form journal/article style
+suitable for a non-specialist audience entering university, with at least one passage containing
+detailed logical argument.
 
-Each passage must have about 13 questions, mixing these types across the test:
-- MCQ: 4 options, correctAnswer is one of them.
-- TRUE_FALSE_NOT_GIVEN: no options, correctAnswer is exactly "True", "False", or "Not Given".
-- MATCHING: options is a list of headings/features, correctAnswer is the matching option text.
-- COMPLETION: fill-in-the-blank, no options, correctAnswer is the missing word(s).
-- SHORT_ANSWER: no options, correctAnswer is no more than three words.
+Each passage must have about 13 questions, mixing these types. Use a genuine mix across the whole
+test, not just MCQ:
+- MCQ: 4 options, correctAnswer is one of them. Questions must follow the same order as the
+  information appears in the passage.
+- TRUE_FALSE_NOT_GIVEN: use ONLY for passages/statements that report FACTS. No options.
+  correctAnswer is exactly "True", "False", or "Not Given". "False" means the statement
+  contradicts the passage; "Not Given" means the passage neither confirms nor denies it.
+- YES_NO_NOT_GIVEN: use ONLY for statements about the WRITER'S OPINIONS OR CLAIMS (not plain
+  facts). No options. correctAnswer is exactly "Yes", "No", or "Not Given". "No" means the
+  statement contradicts the writer's view; "Not Given" means the writer's view on it is unclear.
+- MATCHING: vary the matching sub-type across the test — matching headings to paragraphs
+  (options = a list of headings, more headings than paragraphs), matching information to
+  paragraphs (options = paragraph letters), matching features (options = a list of features to
+  match to items), or matching sentence endings (options = a list of possible endings). Say in
+  the question text which kind of matching it is. correctAnswer is the matching option text.
+- COMPLETION: fill-in-the-blank (sentence/summary/note/table/flow-chart completion). No options.
+  The answer must be one or more words copied VERBATIM from the passage (do not change word
+  form/tense). State the word limit directly in the question text, e.g. "using NO MORE THAN TWO
+  WORDS from the passage". correctAnswer must obey that same limit.
+- SHORT_ANSWER: no options. State a word limit in the question text (e.g. "NO MORE THAN THREE
+  WORDS"), and correctAnswer must obey it, taken verbatim from the passage.
 
 For every question also provide "acceptableAnswers": a short array of alternative spellings or
 phrasings that should also count as correct (can be an empty array).
@@ -47,7 +64,7 @@ Respond ONLY with a JSON object in this exact shape:
       "content": "string (the full passage text)",
       "questions": [
         {
-          "type": "MCQ" | "TRUE_FALSE_NOT_GIVEN" | "MATCHING" | "COMPLETION" | "SHORT_ANSWER",
+          "type": "MCQ" | "TRUE_FALSE_NOT_GIVEN" | "YES_NO_NOT_GIVEN" | "MATCHING" | "COMPLETION" | "SHORT_ANSWER",
           "text": "string",
           "options": ["string"],
           "correctAnswer": "string",
@@ -63,7 +80,7 @@ const generateReadingTest = async (difficulty: Difficulty = 'MEDIUM') => {
   const topic = pickTopic();
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     response_format: { type: 'json_object' },
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },

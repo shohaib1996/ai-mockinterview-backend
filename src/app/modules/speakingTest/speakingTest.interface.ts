@@ -8,7 +8,7 @@ export interface IStoredMessage extends IConversationMessage {
 }
 
 export interface IChatPayload {
-  part: 1 | 3;
+  part: 1 | 2 | 3;
   conversation: IConversationMessage[];
 }
 

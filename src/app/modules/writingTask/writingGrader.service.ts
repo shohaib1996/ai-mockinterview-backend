@@ -32,7 +32,7 @@ const gradeWritingSubmission = async (
   const taskCriterionName = task === IELTSWritingTaskType.TASK1 ? 'Task Achievement' : 'Task Response';
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     response_format: { type: 'json_object' },
     messages: [
       {
@@ -42,6 +42,17 @@ Score strictly using the 4 official IELTS Writing band criteria, each from 0 to 
 ${taskCriterionName}, Coherence and Cohesion, Lexical Resource, Grammatical Range and Accuracy.
 The response is ${wordCount} words; the minimum required is ${minWords} words. A response under the
 minimum should be penalized on ${taskCriterionName} per real IELTS rules.
+
+Apply these real IELTS grading rules strictly:
+- Penalize on ${taskCriterionName} if the response does not actually address the specific prompt
+  given (off-topic or generic content that could answer almost any prompt).
+- Penalize heavily if the response is mostly notes or bullet points rather than full, connected
+  sentences and paragraphs — IELTS Writing requires continuous prose.
+- Penalize on ${taskCriterionName} and Lexical Resource if large portions of the response appear
+  copied verbatim from the prompt itself rather than the candidate's own writing.
+- Penalize if the response reads like a memorized generic "model answer" disconnected from the
+  specific prompt (formulaic template language, no specific engagement with the actual question)
+  — real examiners are trained to detect and penalize this.
 
 Respond ONLY with JSON in this exact shape:
 {

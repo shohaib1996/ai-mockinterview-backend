@@ -27,6 +27,7 @@ enum QuestionType {
   MCQ
   OPEN_ENDED
   TRUE_FALSE_NOT_GIVEN
+  YES_NO_NOT_GIVEN
   MATCHING
   COMPLETION
   SHORT_ANSWER
@@ -50,6 +51,7 @@ model SpeakingTest {
   part1Questions String[]
   cueCardTopic   String
   cueCardBullets String[]
+  part2FollowUpQuestions String[]
   part3Questions String[]
   difficulty     Difficulty @default(MEDIUM)
   createdAt      DateTime   @default(now())

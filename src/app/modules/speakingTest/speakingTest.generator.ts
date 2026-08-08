@@ -25,7 +25,9 @@ speaking test matching the real IELTS format:
 
 - Part 1 (Introduction and Interview): 4-5 simple personal questions about a familiar everyday topic.
 - Part 2 (Individual Long Turn): a cue card topic with 3-4 "you should say" bullet points, on a
-  related but distinct topic from Part 1.
+  related but distinct topic from Part 1. After the candidate's 1-2 minute long turn, the examiner
+  asks 1-2 brief rounding-off follow-up questions still on the cue card topic (not yet the more
+  abstract Part 3 territory) — provide these as "part2FollowUpQuestions".
 - Part 3 (Two-Way Discussion): 4-5 more abstract discussion questions that extend the Part 2 topic
   into broader, more analytical territory (opinions, comparisons, society-level implications).
 
@@ -35,6 +37,7 @@ Respond ONLY with JSON in this exact shape:
   "part1Questions": ["string", "string", "string", "string"],
   "cueCardTopic": "string (e.g. 'Describe a book that influenced you')",
   "cueCardBullets": ["string", "string", "string", "string"],
+  "part2FollowUpQuestions": ["string", "string"],
   "part3Questions": ["string", "string", "string", "string"]
 }`;
 
@@ -42,7 +45,7 @@ const generateSpeakingTest = async (difficulty: Difficulty = 'MEDIUM') => {
   const topic = pickTopic();
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     response_format: { type: 'json_object' },
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
@@ -63,10 +66,16 @@ const generateSpeakingTest = async (difficulty: Difficulty = 'MEDIUM') => {
     part1Questions: string[];
     cueCardTopic: string;
     cueCardBullets: string[];
+    part2FollowUpQuestions: string[];
     part3Questions: string[];
   };
 
-  if (!parsed.part1Questions?.length || !parsed.part3Questions?.length || !parsed.cueCardBullets?.length) {
+  if (
+    !parsed.part1Questions?.length ||
+    !parsed.part3Questions?.length ||
+    !parsed.cueCardBullets?.length ||
+    !parsed.part2FollowUpQuestions?.length
+  ) {
     throw new Error('Invalid speaking test format received from OpenAI');
   }
 
@@ -76,6 +85,7 @@ const generateSpeakingTest = async (difficulty: Difficulty = 'MEDIUM') => {
       part1Questions: parsed.part1Questions,
       cueCardTopic: parsed.cueCardTopic,
       cueCardBullets: parsed.cueCardBullets,
+      part2FollowUpQuestions: parsed.part2FollowUpQuestions,
       part3Questions: parsed.part3Questions,
       difficulty,
     },

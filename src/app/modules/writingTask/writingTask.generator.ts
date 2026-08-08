@@ -53,7 +53,7 @@ const generateTask1 = async (difficulty: Difficulty = 'MEDIUM') => {
   const topic = pickTopic(TASK1_TOPICS);
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     response_format: { type: 'json_object' },
     messages: [
       {
@@ -109,7 +109,7 @@ const generateTask2 = async (difficulty: Difficulty = 'MEDIUM') => {
   const topic = pickTopic(TASK2_TOPICS);
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     response_format: { type: 'json_object' },
     messages: [
       {
