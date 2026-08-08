@@ -6,8 +6,6 @@ import { WritingTaskGenerator } from '../writingTask/writingTask.generator';
 import { WritingGraderService } from '../writingTask/writingGrader.service';
 import { ISubmitWritingTest } from './writingTest.interface';
 
-const MIN_POOL_SIZE_PER_DIFFICULTY = 3;
-
 const assignTask = async (userId: string, task: IELTSWritingTaskType) => {
   const completedTaskIds = (
     await prisma.writingSubmission.findMany({
@@ -159,44 +157,38 @@ const submitWritingTest = async (sessionId: string, userId: string, payload: ISu
   return { task1: task1Result, task2: task2Result, overallBand, session: updatedSession };
 };
 
-const ensurePool = async (difficulty: Difficulty) => {
-  let generated = 0;
-
-  for (const task of [IELTSWritingTaskType.TASK1, IELTSWritingTaskType.TASK2]) {
-    const count = await prisma.writingTask.count({ where: { task, difficulty } });
-    const toGenerate = Math.max(0, MIN_POOL_SIZE_PER_DIFFICULTY - count);
-
-    for (let i = 0; i < toGenerate; i++) {
-      try {
-        if (task === IELTSWritingTaskType.TASK1) {
-          await WritingTaskGenerator.generateTask1(difficulty);
-        } else {
-          await WritingTaskGenerator.generateTask2(difficulty);
-        }
-        await prisma.generationLog.create({
-          data: { skill: SessionType.IELTS_WRITING, difficulty, status: 'SUCCESS' },
-        });
-        generated++;
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        await prisma.generationLog.create({
-          data: {
-            skill: SessionType.IELTS_WRITING,
-            difficulty,
-            status: 'FAILED',
-            errorMessage: message.slice(0, 500),
-          },
-        });
-      }
-    }
+// Manual, admin-triggered - always generates exactly one new Task 1 + one
+// new Task 2 (a matched pair, since that's what a "writing test" is), with
+// no ceiling. There's no automatic replenishment anymore (no cron, and the
+// live per-user fallback in assignTask generates its own on demand), so
+// there's nothing left for a pool floor to protect against.
+const generateOne = async (difficulty: Difficulty) => {
+  try {
+    await Promise.all([
+      WritingTaskGenerator.generateTask1(difficulty),
+      WritingTaskGenerator.generateTask2(difficulty),
+    ]);
+    await prisma.generationLog.create({
+      data: { skill: SessionType.IELTS_WRITING, difficulty, status: 'SUCCESS' },
+    });
+    return { generated: 1 };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    await prisma.generationLog.create({
+      data: {
+        skill: SessionType.IELTS_WRITING,
+        difficulty,
+        status: 'FAILED',
+        errorMessage: message.slice(0, 500),
+      },
+    });
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Failed to generate writing task(s): ${message}`);
   }
-
-  return { generated };
 };
 
 export const WritingTestServices = {
   assignWritingTest,
   getWritingTestBySession,
   submitWritingTest,
-  ensurePool,
+  generateOne,
 };

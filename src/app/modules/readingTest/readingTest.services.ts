@@ -7,8 +7,6 @@ import { AnswerServices } from '../answer/answer.services';
 import { rawScoreToReadingBand } from '@/app/utils/bandConversion';
 import { ISubmitReadingAnswer } from './readingTest.interface';
 
-const MIN_POOL_SIZE_PER_DIFFICULTY = 3;
-
 const readingTestInclude = {
   passages: {
     orderBy: { order: 'asc' as const },
@@ -128,41 +126,34 @@ const submitReadingTest = async (
   return { rawScore, totalQuestions, band, session: updatedSession };
 };
 
-const ensurePool = async (difficulty: Difficulty) => {
-  const count = await prisma.readingTest.count({ where: { difficulty } });
-  if (count >= MIN_POOL_SIZE_PER_DIFFICULTY) {
-    return { alreadySufficient: true, generated: 0 };
+// Manual, admin-triggered - always generates exactly one new test, with no
+// ceiling. There's no automatic replenishment anymore (no cron, and the
+// live per-user fallback in assignReadingTest generates its own on demand),
+// so there's nothing left for a pool floor to protect against.
+const generateOne = async (difficulty: Difficulty) => {
+  try {
+    await ReadingTestGenerator.generateReadingTest(difficulty);
+    await prisma.generationLog.create({
+      data: { skill: SessionType.IELTS_READING, difficulty, status: 'SUCCESS' },
+    });
+    return { generated: 1 };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    await prisma.generationLog.create({
+      data: {
+        skill: SessionType.IELTS_READING,
+        difficulty,
+        status: 'FAILED',
+        errorMessage: message.slice(0, 500),
+      },
+    });
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Failed to generate reading test: ${message}`);
   }
-
-  const toGenerate = MIN_POOL_SIZE_PER_DIFFICULTY - count;
-  let generated = 0;
-
-  for (let i = 0; i < toGenerate; i++) {
-    try {
-      await ReadingTestGenerator.generateReadingTest(difficulty);
-      await prisma.generationLog.create({
-        data: { skill: SessionType.IELTS_READING, difficulty, status: 'SUCCESS' },
-      });
-      generated++;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      await prisma.generationLog.create({
-        data: {
-          skill: SessionType.IELTS_READING,
-          difficulty,
-          status: 'FAILED',
-          errorMessage: message.slice(0, 500),
-        },
-      });
-    }
-  }
-
-  return { alreadySufficient: false, generated };
 };
 
 export const ReadingTestServices = {
   assignReadingTest,
   getReadingTestBySession,
   submitReadingTest,
-  ensurePool,
+  generateOne,
 };

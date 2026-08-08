@@ -54,37 +54,37 @@ const generateNow = catchAsync(async (req: Request, res: Response) => {
   const { skill, difficulty } = req.body as { skill: SessionType; difficulty?: Difficulty };
 
   if (skill === SessionType.IELTS_READING) {
-    const result = await ReadingTestServices.ensurePool(difficulty ?? 'MEDIUM');
+    const result = await ReadingTestServices.generateOne(difficulty ?? 'MEDIUM');
     return res.status(httpStatus.OK).json({
       success: true,
-      message: 'Reading pool generation triggered',
+      message: 'Reading test generated',
       data: result,
     });
   }
 
   if (skill === SessionType.IELTS_LISTENING) {
-    const result = await ListeningTestServices.ensurePool(difficulty ?? 'MEDIUM');
+    const result = await ListeningTestServices.generateOne(difficulty ?? 'MEDIUM');
     return res.status(httpStatus.OK).json({
       success: true,
-      message: 'Listening pool generation triggered',
+      message: 'Listening test generated',
       data: result,
     });
   }
 
   if (skill === SessionType.IELTS_WRITING) {
-    const result = await WritingTestServices.ensurePool(difficulty ?? 'MEDIUM');
+    const result = await WritingTestServices.generateOne(difficulty ?? 'MEDIUM');
     return res.status(httpStatus.OK).json({
       success: true,
-      message: 'Writing pool generation triggered',
+      message: 'Writing test generated',
       data: result,
     });
   }
 
   if (skill === SessionType.IELTS_SPEAKING) {
-    const result = await SpeakingTestServices.ensurePool(difficulty ?? 'MEDIUM');
+    const result = await SpeakingTestServices.generateOne(difficulty ?? 'MEDIUM');
     return res.status(httpStatus.OK).json({
       success: true,
-      message: 'Speaking pool generation triggered',
+      message: 'Speaking test generated',
       data: result,
     });
   }

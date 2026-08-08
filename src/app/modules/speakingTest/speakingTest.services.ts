@@ -10,7 +10,6 @@ import { SpeakingGraderService } from './speakingGrader.service';
 import { IChatPayload, IStoredMessage, ISubmitPart2Payload } from './speakingTest.interface';
 
 const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
-const MIN_POOL_SIZE_PER_DIFFICULTY = 3;
 
 const assignSpeakingTest = async (userId: string) => {
   const completedTestIds = (
@@ -179,36 +178,29 @@ const analyzeSpeakingTest = async (sessionId: string, userId: string) => {
   return { ...result, session: updatedSession };
 };
 
-const ensurePool = async (difficulty: Difficulty) => {
-  const count = await prisma.speakingTest.count({ where: { difficulty } });
-  if (count >= MIN_POOL_SIZE_PER_DIFFICULTY) {
-    return { alreadySufficient: true, generated: 0 };
+// Manual, admin-triggered - always generates exactly one new test, with no
+// ceiling. There's no automatic replenishment anymore (no cron, and the
+// live per-user fallback in assignSpeakingTest generates its own on
+// demand), so there's nothing left for a pool floor to protect against.
+const generateOne = async (difficulty: Difficulty) => {
+  try {
+    await SpeakingTestGenerator.generateSpeakingTest(difficulty);
+    await prisma.generationLog.create({
+      data: { skill: SessionType.IELTS_SPEAKING, difficulty, status: 'SUCCESS' },
+    });
+    return { generated: 1 };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    await prisma.generationLog.create({
+      data: {
+        skill: SessionType.IELTS_SPEAKING,
+        difficulty,
+        status: 'FAILED',
+        errorMessage: message.slice(0, 500),
+      },
+    });
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Failed to generate speaking test: ${message}`);
   }
-
-  const toGenerate = MIN_POOL_SIZE_PER_DIFFICULTY - count;
-  let generated = 0;
-
-  for (let i = 0; i < toGenerate; i++) {
-    try {
-      await SpeakingTestGenerator.generateSpeakingTest(difficulty);
-      await prisma.generationLog.create({
-        data: { skill: SessionType.IELTS_SPEAKING, difficulty, status: 'SUCCESS' },
-      });
-      generated++;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      await prisma.generationLog.create({
-        data: {
-          skill: SessionType.IELTS_SPEAKING,
-          difficulty,
-          status: 'FAILED',
-          errorMessage: message.slice(0, 500),
-        },
-      });
-    }
-  }
-
-  return { alreadySufficient: false, generated };
 };
 
 export const SpeakingTestServices = {
@@ -217,5 +209,5 @@ export const SpeakingTestServices = {
   chat,
   submitPart2,
   analyzeSpeakingTest,
-  ensurePool,
+  generateOne,
 };

@@ -60,7 +60,10 @@ Mixing these types across the whole test, not just MCQ:
   (options = a list of headings, more headings than paragraphs), matching information to
   paragraphs (options = paragraph letters), matching features (options = a list of features to
   match to items), or matching sentence endings (options = a list of possible endings). Say in
-  the question text which kind of matching it is. correctAnswer is the matching option text.
+  the question text which kind of matching it is. "options" is the shared list being matched
+  against (repeat the SAME options list on every question in that matching group). "correctAnswer"
+  is exactly ONE string copied verbatim from that options list - the single correct match for THIS
+  question, never the whole list. Example: { "type": "MATCHING", "text": "Which paragraph discusses funding sources?", "options": ["A", "B", "C", "D", "E"], "correctAnswer": "C" }
 - COMPLETION: fill-in-the-blank (sentence/summary/note/table/flow-chart completion). No options.
   The answer must be one or more words copied VERBATIM from the passage (do not change word
   form/tense). State the word limit directly in the question text, e.g. "using NO MORE THAN TWO

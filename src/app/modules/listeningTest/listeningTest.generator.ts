@@ -102,7 +102,11 @@ Question type rules:
 - COMPLETION: fill-in-the-blank (form/note/table/summary completion). No options. State a word
   limit directly in the question text, e.g. "Write NO MORE THAN TWO WORDS AND/OR A NUMBER".
   correctAnswer must be taken verbatim from the script (same word form/tense) and obey that limit.
-- MATCHING: options is a list to match against, correctAnswer is the matching option text.
+- MATCHING: "options" is the shared list of items being matched against (e.g. every question in a
+  matching group repeats the SAME options list). "correctAnswer" is exactly ONE string copied
+  verbatim from that options list - the single correct match for THIS question, never the whole
+  list and never more than one item. Example of one correct question object:
+  { "type": "MATCHING", "text": "Who is responsible for the marketing plan?", "options": ["Sarah", "Tom", "Priya", "James"], "correctAnswer": "Priya" }
 
 Never require a contracted word (e.g. "they're") as an answer, and prefer hyphenated compounds
 counted as one word where natural. For every question also provide "acceptableAnswers": alternative
