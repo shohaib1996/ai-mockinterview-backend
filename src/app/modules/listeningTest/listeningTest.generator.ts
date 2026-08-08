@@ -10,7 +10,10 @@ const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
 // One TTS voice per section keeps synthesis to a single reliable API call per
 // section instead of stitching together many per-speaker clips.
-const SECTION_VOICES = ['alloy', 'echo', 'sage', 'verse'];
+// Must be voices the tts-1 model actually accepts (its valid set is narrower
+// than the SDK's TypeScript type, which also lists newer voices like
+// 'verse'/'ballad' that tts-1 rejects at runtime).
+const SECTION_VOICES = ['alloy', 'echo', 'onyx', 'nova'];
 
 const TOPICS = [
   'booking accommodation',
