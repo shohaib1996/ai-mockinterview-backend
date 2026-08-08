@@ -7,5 +7,7 @@ const router = express.Router();
 
 router.get('/', auth([Role.ADMIN]), ContentPoolController.getPoolStatus);
 router.post('/generate', auth([Role.ADMIN]), ContentPoolController.generateNow);
+router.get('/:skill/tests', auth([Role.ADMIN]), ContentPoolController.getTests);
+router.delete('/:skill/tests/:id', auth([Role.ADMIN]), ContentPoolController.deleteTest);
 
 export const ContentPoolRoutes = router;

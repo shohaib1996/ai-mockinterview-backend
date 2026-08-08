@@ -230,6 +230,7 @@ model WritingTask {
   imageUrl           String?
   chartConfig        Json?
   difficulty         Difficulty?
+  createdAt          DateTime            @default(now())
   writingSubmissions WritingSubmission[]
 }
 

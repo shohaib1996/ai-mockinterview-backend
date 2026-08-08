@@ -7,6 +7,7 @@ import { ReadingTestServices } from '@/app/modules/readingTest/readingTest.servi
 import { ListeningTestServices } from '@/app/modules/listeningTest/listeningTest.services';
 import { WritingTestServices } from '@/app/modules/writingTest/writingTest.services';
 import { SpeakingTestServices } from '@/app/modules/speakingTest/speakingTest.services';
+import { ContentPoolServices } from './contentPool.services';
 import { Difficulty, SessionType } from '@prisma/client';
 
 const getPoolStatus = catchAsync(async (req: Request, res: Response) => {
@@ -91,4 +92,38 @@ const generateNow = catchAsync(async (req: Request, res: Response) => {
   throw new ApiError(httpStatus.BAD_REQUEST, `Generation for ${skill} is not available yet`);
 });
 
-export const ContentPoolController = { getPoolStatus, generateNow };
+const getTests = catchAsync(async (req: Request, res: Response) => {
+  const { skill } = req.params;
+  const { page, limit, difficulty } = req.query as {
+    page?: string;
+    limit?: string;
+    difficulty?: Difficulty;
+  };
+
+  const result = await ContentPoolServices.listTests(skill as SessionType, {
+    page: page ? Number(page) : undefined,
+    limit: limit ? Number(limit) : undefined,
+    difficulty,
+  });
+
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: 'Tests retrieved',
+    ...result,
+  });
+});
+
+const deleteTest = catchAsync(async (req: Request, res: Response) => {
+  const { skill, id } = req.params;
+  if (!id) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Test ID is required');
+  }
+  await ContentPoolServices.deleteTest(skill as SessionType, id);
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: 'Test deleted',
+    data: null,
+  });
+});
+
+export const ContentPoolController = { getPoolStatus, generateNow, getTests, deleteTest };
