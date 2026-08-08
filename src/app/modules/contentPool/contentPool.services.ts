@@ -2,6 +2,8 @@ import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
 import httpStatus from 'http-status';
 import { Difficulty, SessionType } from '@prisma/client';
+import { WritingTaskServices } from '@/app/modules/writingTask/writingTask.services';
+import { SpeakingTestBankServices } from '@/app/modules/speakingTestBank/speakingTestBank.services';
 
 const PAGE_SIZE_DEFAULT = 10;
 
@@ -138,26 +140,16 @@ const deleteTest = async (skill: SessionType, id: string) => {
   }
 
   if (skill === SessionType.IELTS_WRITING) {
-    const submissionCount = await prisma.writingSubmission.count({ where: { writingTaskId: id } });
-    if (submissionCount > 0) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        `Cannot delete: ${submissionCount} submission(s) reference this task`,
-      );
-    }
-    await prisma.writingTask.delete({ where: { id } });
+    // Delegate to the canonical guarded delete so this always matches the
+    // result of deleting the same task from the writing-tasks admin page.
+    await WritingTaskServices.deleteWritingTask(id);
     return;
   }
 
   if (skill === SessionType.IELTS_SPEAKING) {
-    const sessionCount = await prisma.session.count({ where: { speakingTestId: id } });
-    if (sessionCount > 0) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        `Cannot delete: ${sessionCount} session(s) have already used this test`,
-      );
-    }
-    await prisma.speakingTest.delete({ where: { id } });
+    // Delegate to the canonical guarded delete so this always matches the
+    // result of deleting the same test from the speaking-test-bank admin page.
+    await SpeakingTestBankServices.deleteSpeakingTest(id);
     return;
   }
 

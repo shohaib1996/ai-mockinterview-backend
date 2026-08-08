@@ -23,6 +23,7 @@ import { ContentPoolRoutes } from '../modules/contentPool/contentPool.routes';
 import { ListeningTestRoutes } from '../modules/listeningTest/listeningTest.routes';
 import { WritingTestRoutes } from '../modules/writingTest/writingTest.routes';
 import { SpeakingTestRoutes } from '../modules/speakingTest/speakingTest.routes';
+import { SpeakingTestBankRoutes } from '../modules/speakingTestBank/speakingTestBank.routes';
 
 const moduleRoutes = [
   {
@@ -108,6 +109,10 @@ const moduleRoutes = [
   {
     path: '/speaking-tests',
     route: SpeakingTestRoutes,
+  },
+  {
+    path: '/speaking-test-bank',
+    route: SpeakingTestBankRoutes,
   },
 ];
 

@@ -99,6 +99,14 @@ const updateWritingTask = async (
 };
 
 const deleteWritingTask = async (id: string): Promise<WritingTask> => {
+  const submissionCount = await prisma.writingSubmission.count({ where: { writingTaskId: id } });
+  if (submissionCount > 0) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Cannot delete: ${submissionCount} submission(s) reference this task`,
+    );
+  }
+
   try {
     const result = await prisma.writingTask.delete({
       where: {
