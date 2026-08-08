@@ -26,7 +26,7 @@ const gradeSpeakingTest = async (
     .join('\n');
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: 'gpt-4o-mini',
     response_format: { type: 'json_object' },
     messages: [
       {
@@ -67,6 +67,16 @@ Respond ONLY with JSON in this exact shape:
     grammaticalRange: parsed.grammaticalRange,
     pronunciation: parsed.pronunciation,
   };
+
+  const isValidBandScore = (n: unknown): n is number =>
+    typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 9;
+  const invalidField = Object.entries(criteriaScores).find(([, value]) => !isValidBandScore(value));
+  if (invalidField) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `AI returned an invalid ${invalidField[0]} score: ${JSON.stringify(invalidField[1])}`,
+    );
+  }
 
   const band =
     Math.round(
