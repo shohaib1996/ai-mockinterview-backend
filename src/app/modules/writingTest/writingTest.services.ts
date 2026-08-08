@@ -85,10 +85,20 @@ const getWritingTestBySession = async (sessionId: string, userId: string) => {
     userId,
   );
 
+  const toTaskPayload = (submission: typeof task1Submission) => ({
+    ...submission.writingTask,
+    submissionId: submission.id,
+    submittedText: submission.extractedText,
+    score: submission.score,
+    criteriaScores: submission.criteriaScores,
+    wordCount: submission.wordCount,
+    feedback: submission.feedback,
+  });
+
   return {
     session,
-    task1: { ...task1Submission.writingTask, submissionId: task1Submission.id },
-    task2: { ...task2Submission.writingTask, submissionId: task2Submission.id },
+    task1: toTaskPayload(task1Submission),
+    task2: toTaskPayload(task2Submission),
   };
 };
 
