@@ -31,25 +31,39 @@ const TOPICS = [
 const pickTopic = () => TOPICS[Math.floor(Math.random() * TOPICS.length)];
 
 const SYSTEM_PROMPT = `You are an IELTS Academic Listening test writer. Generate a full listening test
-matching the real IELTS format: exactly 4 sections of increasing difficulty.
+matching the real IELTS format: exactly 4 sections of increasing difficulty, each with EXACTLY 10
+questions — this count is fixed by the real exam (Q1-10, Q11-20, Q21-30, Q31-40) and must be hit
+exactly, not "about 10".
 
-- Section 1: a conversation between two people in an everyday social context (e.g. booking something).
-- Section 2: a monologue in an everyday social context (e.g. a talk about local facilities).
-- Section 3: a conversation between up to four people in an educational/training context.
-- Section 4: a monologue on an academic subject.
+Each section has a fixed context AND a typical question-type pattern taken from real past papers.
+Follow both:
+
+- Section 1 (Q1-10): a conversation between two people in an everyday social context (e.g. booking
+  something). ALL 10 questions should be COMPLETION (form/note/table completion) — this is the
+  standard real-exam pattern for Section 1. Do not use MCQ or MATCHING here.
+- Section 2 (Q11-20): a monologue in an everyday social context (e.g. a talk about local
+  facilities). Mostly MCQ (single-answer, 4 options), with 2-4 COMPLETION questions mixed in
+  (note/form completion). MCQ should be the majority of this section.
+- Section 3 (Q21-30): a conversation between up to four people in an educational/training context
+  (e.g. students and a tutor discussing a project). A mix of MCQ and MATCHING (e.g. matching
+  several opinions/comments/tasks to a list of people or categories). Do not use COMPLETION here.
+- Section 4 (Q31-40): a monologue on an academic subject (a lecture). ALL 10 questions should be a
+  single continuous COMPLETION (note/summary completion) — this is the standard real-exam pattern
+  for Section 4. Do not use MCQ or MATCHING here.
+
+Sections 1-2 should be noticeably easier than sections 3-4, regardless of the overall requested
+difficulty tier — difficulty climbs steadily across the test.
 
 Each section's "script" is an array of spoken turns ({"speaker": "A"|"B"|"C"|"D", "text": "..."}).
 Keep the combined spoken text of a section under 3000 characters so it fits one audio synthesis call.
 
-Each section must have about 10 questions, mixing these types. Questions within a section must
-follow the same order as the information appears in the audio script (the answer to question 1
-must come before the answer to question 2, and so on):
+Questions within a section must follow the same order as the information appears in the audio
+script (the answer to question 1 must come before the answer to question 2, and so on). Use only
+these question types:
 - MCQ: 4 options, correctAnswer is one of them.
 - COMPLETION: fill-in-the-blank (form/note/table/summary completion). No options. State a word
   limit directly in the question text, e.g. "Write NO MORE THAN TWO WORDS AND/OR A NUMBER".
   correctAnswer must be taken verbatim from the script (same word form/tense) and obey that limit.
-- SHORT_ANSWER: no options. State a word limit in the question text (e.g. "NO MORE THAN THREE
-  WORDS"), and correctAnswer must obey it, taken verbatim from the script.
 - MATCHING: options is a list to match against, correctAnswer is the matching option text.
 
 Never require a contracted word (e.g. "they're") as an answer, and prefer hyphenated compounds
@@ -69,7 +83,7 @@ Respond ONLY with a JSON object in this exact shape:
       "script": [{ "speaker": "A", "text": "string" }],
       "questions": [
         {
-          "type": "MCQ" | "COMPLETION" | "SHORT_ANSWER" | "MATCHING",
+          "type": "MCQ" | "COMPLETION" | "MATCHING",
           "text": "string",
           "options": ["string"],
           "correctAnswer": "string",
@@ -115,8 +129,17 @@ const generateListeningTest = async (difficulty: Difficulty = 'MEDIUM') => {
   }
 
   const parsed = JSON.parse(raw) as IGeneratedListeningTest;
-  if (!Array.isArray(parsed.sections) || parsed.sections.length === 0) {
-    throw new Error('Invalid listening test format received from OpenAI');
+  if (!Array.isArray(parsed.sections) || parsed.sections.length !== 4) {
+    throw new Error('Invalid listening test format received from OpenAI: expected exactly 4 sections');
+  }
+
+  const wrongCounts = parsed.sections
+    .map((s) => s.questions?.length ?? 0)
+    .filter((count) => count !== 10);
+  if (wrongCounts.length > 0) {
+    throw new Error(
+      `Invalid listening test format received from OpenAI: every section must have exactly 10 questions, got [${parsed.sections.map((s) => s.questions?.length ?? 0).join(', ')}]`,
+    );
   }
 
   const sectionsWithAudio = await Promise.all(

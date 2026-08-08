@@ -30,8 +30,23 @@ matching the real IELTS Academic Reading format: exactly 3 passages of increasin
 suitable for a non-specialist audience entering university, with at least one passage containing
 detailed logical argument.
 
-Each passage must have about 13 questions, mixing these types. Use a genuine mix across the whole
-test, not just MCQ:
+The test must total EXACTLY 40 questions, split as: passage 1 = 13 questions (Q1-13), passage 2 =
+13 questions (Q14-26), passage 3 = 14 questions (Q27-40). This split is the standard real-exam
+pattern and must be hit exactly.
+
+Each passage should lean toward the question types real IELTS papers typically use at that
+position, though a small amount of variation is fine:
+- Passage 1 (easiest): mostly COMPLETION (sentence/summary/note/table completion) and
+  TRUE_FALSE_NOT_GIVEN, since it reports plain facts. MATCHING or SHORT_ANSWER can appear
+  occasionally but should not dominate.
+- Passage 2 (moderate): mostly MATCHING (matching headings to paragraphs) and MCQ, plus one
+  COMPLETION set (sentence or summary completion). This passage also carries the diagram-labeling
+  group described below, which counts toward its 13.
+- Passage 3 (hardest): mostly the harder MATCHING sub-types (matching information to paragraphs,
+  matching features, matching sentence endings) and YES_NO_NOT_GIVEN, since this passage is where
+  the writer's opinions/claims are argued. MCQ can appear occasionally.
+
+Mixing these types across the whole test, not just MCQ:
 - MCQ: 4 options, correctAnswer is one of them. Questions must follow the same order as the
   information appears in the passage.
 - TRUE_FALSE_NOT_GIVEN: use ONLY for passages/statements that report FACTS. No options.
@@ -72,7 +87,7 @@ Use 4-8 shapes for a floorplan (a mix of pre-labeled shapes for orientation and 
 blanks), or 3-6 shapes with "connections" between them in sequence for a process (label the start
 and end shapes, numbered-blank the middle steps). x/y/width/height are percentages of the canvas —
 lay shapes out so they don't overlap. Add exactly one DIAGRAM_LABEL question per numbered blank
-shape, and reduce passage 2's other question types slightly so the total is still about 13.
+shape, and reduce passage 2's other question types so the total is still exactly 13.
 
 For every question also provide "acceptableAnswers": a short array of alternative spellings or
 phrasings that should also count as correct (can be an empty array).
@@ -124,8 +139,15 @@ const generateReadingTest = async (difficulty: Difficulty = 'MEDIUM') => {
 
   const parsed = JSON.parse(raw) as IGeneratedReadingTest;
 
-  if (!Array.isArray(parsed.passages) || parsed.passages.length === 0) {
-    throw new Error('Invalid reading test format received from OpenAI');
+  if (!Array.isArray(parsed.passages) || parsed.passages.length !== 3) {
+    throw new Error('Invalid reading test format received from OpenAI: expected exactly 3 passages');
+  }
+
+  const totalQuestions = parsed.passages.reduce((sum, p) => sum + (p.questions?.length ?? 0), 0);
+  if (totalQuestions !== 40) {
+    throw new Error(
+      `Invalid reading test format received from OpenAI: expected 40 questions total, got ${totalQuestions}`,
+    );
   }
 
   const readingTest = await prisma.readingTest.create({
