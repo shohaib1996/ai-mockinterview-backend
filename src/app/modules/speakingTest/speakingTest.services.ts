@@ -1,15 +1,12 @@
 import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
 import httpStatus from 'http-status';
-import { OpenAI } from 'openai';
-import config from '@/app/config';
+import { mistral } from '@/app/lib/mistral';
 import { ChatCompletionMessageParam } from 'openai/resources/index';
 import { Difficulty, SessionType } from '@prisma/client';
 import { SpeakingTestGenerator } from './speakingTest.generator';
 import { SpeakingGraderService } from './speakingGrader.service';
 import { IChatPayload, IStoredMessage, ISubmitPart2Payload } from './speakingTest.interface';
-
-const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
 const assignSpeakingTest = async (userId: string) => {
   const completedTestIds = (
@@ -99,30 +96,39 @@ const chat = async (sessionId: string, userId: string, payload: IChatPayload) =>
   const isPartComplete = userMessageCount >= questions.length;
   const isFirstQuestion = userMessageCount === 0;
 
+  const plainTextInstruction = `This reply is spoken aloud by text-to-speech and shown as plain
+conversational text, not a chat/markdown UI. Respond with plain spoken English only - no markdown,
+no **bold**, no headers, no bullet points, no asterisks or other formatting symbols of any kind.`;
+
   const systemPrompt = isPartComplete
     ? `You are an IELTS Speaking examiner. The candidate has answered all questions for this part.
 Give a brief one-sentence closing remark for this part only (e.g. "Thank you, that's the end of this part.").
-Do not ask any further questions.`
+Do not ask any further questions.
+${plainTextInstruction}`
     : payload.part === 2
       ? `You are an IELTS Speaking examiner. The candidate has just finished their Part 2 long turn.
-${isFirstQuestion ? '' : "Give a brief, natural one-sentence acknowledgment of the candidate's last answer, then "}Ask exactly this brief rounding-off question verbatim, still on the same cue card topic (do not modify it): "${nextQuestion}"`
+${isFirstQuestion ? '' : "Give a brief, natural one-sentence acknowledgment of the candidate's last answer, then "}Ask exactly this brief rounding-off question verbatim, still on the same cue card topic (do not modify it): "${nextQuestion}"
+${plainTextInstruction}`
       : isFirstQuestion
         ? `You are an IELTS Speaking examiner starting Part ${payload.part} of the test.
-Briefly introduce this part in one short sentence, then ask exactly this question verbatim (do not modify it): "${nextQuestion}"`
+Briefly introduce this part in exactly one short sentence, then ask exactly this question verbatim
+(do not modify it): "${nextQuestion}"
+${plainTextInstruction}`
         : `You are an IELTS Speaking examiner conducting Part ${payload.part} of the test.
 Give a brief, natural one-sentence acknowledgment of the candidate's last answer, then ask exactly this
-next question verbatim (do not modify it): "${nextQuestion}"`;
+next question verbatim (do not modify it): "${nextQuestion}"
+${plainTextInstruction}`;
 
   const messages: ChatCompletionMessageParam[] = [
     { role: 'system', content: systemPrompt },
     ...payload.conversation.map((m) => ({ role: m.role, content: m.content }) as ChatCompletionMessageParam),
   ];
 
-  const completion = await openai.chat.completions.create({
+  const completion = await mistral.chat.completions.create({
     // This call only rephrases/relays a pre-written question with a brief
-    // acknowledgment - not generating exam content - so the cheaper model
-    // is plenty, and it's called on every conversational turn.
-    model: 'gpt-4o-mini',
+    // acknowledgment - not generating exam content - so Mistral is plenty,
+    // and it's called on every conversational turn.
+    model: 'mistral-large-latest',
     messages,
   });
 

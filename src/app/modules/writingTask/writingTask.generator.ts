@@ -1,10 +1,7 @@
-import { OpenAI } from 'openai';
-import config from '@/app/config';
+import { mistral } from '@/app/lib/mistral';
 import prisma from '@/app/lib/prisma';
 import { uploadToCloudinary } from '@/app/lib/multer';
 import { Difficulty, IELTSWritingTaskType } from '@prisma/client';
-
-const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
 const TASK1_TOPICS = [
   'population growth in different countries',
@@ -52,8 +49,8 @@ const buildQuickChartUrl = (chartConfig: IChartConfig) => {
 const generateTask1 = async (difficulty: Difficulty = 'MEDIUM') => {
   const topic = pickTopic(TASK1_TOPICS);
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+  const completion = await mistral.chat.completions.create({
+    model: 'mistral-large-latest',
     response_format: { type: 'json_object' },
     messages: [
       {
@@ -108,8 +105,8 @@ Respond ONLY with JSON in this shape:
 const generateTask2 = async (difficulty: Difficulty = 'MEDIUM') => {
   const topic = pickTopic(TASK2_TOPICS);
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+  const completion = await mistral.chat.completions.create({
+    model: 'mistral-large-latest',
     response_format: { type: 'json_object' },
     messages: [
       {

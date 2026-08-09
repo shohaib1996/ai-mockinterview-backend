@@ -1,9 +1,6 @@
-import { OpenAI } from 'openai';
-import config from '@/app/config';
+import { mistral } from '@/app/lib/mistral';
 import prisma from '@/app/lib/prisma';
 import { Difficulty } from '@prisma/client';
-
-const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
 const TOPICS = [
   'hometown and living situation',
@@ -44,8 +41,8 @@ Respond ONLY with JSON in this exact shape:
 const generateSpeakingTest = async (difficulty: Difficulty = 'MEDIUM') => {
   const topic = pickTopic();
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+  const completion = await mistral.chat.completions.create({
+    model: 'mistral-large-latest',
     response_format: { type: 'json_object' },
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },

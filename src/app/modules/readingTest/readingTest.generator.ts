@@ -1,12 +1,9 @@
-import { OpenAI } from 'openai';
-import config from '@/app/config';
+import { mistral } from '@/app/lib/mistral';
 import prisma from '@/app/lib/prisma';
 import { Difficulty, SessionType } from '@prisma/client';
 import { IGeneratedReadingTest } from './readingTest.interface';
 import { diagramSpecToImageUrl } from '@/app/utils/diagramRenderer';
 import { validateGeneratedQuestions } from '@/app/utils/validateGeneratedQuestion';
-
-const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
 const TOPICS = [
   'environmental science',
@@ -131,8 +128,8 @@ const requestReadingTest = async (
   difficulty: Difficulty,
   topic: string,
 ): Promise<IGeneratedReadingTest> => {
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+  const completion = await mistral.chat.completions.create({
+    model: 'mistral-large-latest',
     response_format: { type: 'json_object' },
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },

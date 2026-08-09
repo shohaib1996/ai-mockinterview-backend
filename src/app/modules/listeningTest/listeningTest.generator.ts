@@ -1,13 +1,10 @@
-import { OpenAI } from 'openai';
-import config from '@/app/config';
+import { mistral } from '@/app/lib/mistral';
 import prisma from '@/app/lib/prisma';
 import { uploadToCloudinary } from '@/app/lib/multer';
 import { synthesizeSpeech } from '@/app/utils/textToSpeech';
 import { Difficulty, ListeningContext, SessionType } from '@prisma/client';
 import { IGeneratedQuestion, IGeneratedSection, IScriptLine } from './listeningTest.interface';
 import { validateGeneratedQuestions } from '@/app/utils/validateGeneratedQuestion';
-
-const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
 // One TTS voice per section keeps synthesis to a single reliable API call per
 // section instead of stitching together many per-speaker clips.
@@ -153,8 +150,8 @@ const requestListeningSection = async (
   difficulty: Difficulty,
   topic: string,
 ): Promise<IGeneratedSection> => {
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+  const completion = await mistral.chat.completions.create({
+    model: 'mistral-large-latest',
     response_format: { type: 'json_object' },
     messages: [
       { role: 'system', content: buildSectionSystemPrompt(spec) },
