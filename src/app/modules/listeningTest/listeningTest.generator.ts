@@ -89,8 +89,10 @@ count the items in your "questions" array. If it is not exactly 10, add or remov
 it is exactly 10, then re-count. Getting this count wrong makes the whole response unusable.
 ${spec.typeInstruction}
 
-The "script" is an array of spoken turns ({"speaker": "A"|"B"|"C"|"D", "text": "..."}). Keep the
-combined spoken text under 3000 characters so it fits one audio synthesis call. Questions must
+The "script" is an array of spoken turns ({"speaker": "A"|"B"|"C"|"D", "text": "..."}). The combined
+spoken text (all turns concatenated) MUST be under 3000 characters - this is a hard limit, not a
+suggestion, because it feeds a text-to-speech API that rejects longer input. Keep turns concise.
+Questions must
 follow the same order as the information appears in the script (the answer to question 1 must come
 before the answer to question 2, and so on).
 
@@ -138,11 +140,11 @@ const synthesizeSection = async (section: IGeneratedSection, voice: string): Pro
   return result.secure_url;
 };
 
-// gpt-4o-mini doesn't reliably hit exactly 10 questions on the first try, but
-// retries are cheap on the mini model - so retry a few times before giving
-// up, instead of paying for gpt-4o. This only re-runs the text generation
-// for this one section, not TTS synthesis, which happens after all 4
-// sections validate successfully.
+// The model doesn't always hit exactly 10 questions (or stay under the
+// narration length limit) on the first try, but retries are cheap - so
+// retry a few times before giving up. This only re-runs the text
+// generation for this one section, not TTS synthesis, which happens after
+// all 4 sections validate successfully.
 const MAX_GENERATION_ATTEMPTS = 6;
 
 const requestListeningSection = async (
@@ -176,7 +178,19 @@ const requestListeningSection = async (
   if (!Array.isArray(parsed.script) || parsed.script.length === 0) {
     throw new Error(`Invalid listening section ${spec.order}: empty script`);
   }
-  // The real exam is always exactly 10 per section, but gpt-4o-mini doesn't
+  // OpenAI's TTS has a hard 4096-character limit on the synthesis input.
+  // The prompt asks for "under 3000 characters" but that's just a request,
+  // not a guarantee - Mistral doesn't reliably stay under it either, so
+  // enforce a safe margin in code and reject/retry instead of letting a
+  // too-long section reach (and fail) the TTS call later.
+  const MAX_NARRATION_CHARS = 3800;
+  const narrationLength = scriptToNarration(parsed.script).length;
+  if (narrationLength > MAX_NARRATION_CHARS) {
+    throw new Error(
+      `Invalid listening section ${spec.order}: narration too long for TTS (${narrationLength} chars, max ${MAX_NARRATION_CHARS})`,
+    );
+  }
+  // The real exam is always exactly 10 per section, but the model doesn't
   // reliably hit that exact number - accept a near-miss (9) instead of
   // retrying until it's exact, same tolerance as the reading generator.
   const MIN_ACCEPTABLE_QUESTIONS = 9;
