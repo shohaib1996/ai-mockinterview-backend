@@ -1,10 +1,7 @@
-import { OpenAI } from 'openai';
-import config from '@/app/config';
+import { mistral } from '@/app/lib/mistral';
 import { ApiError } from '@/app/errors/apiError';
 import httpStatus from 'http-status';
 import { IELTSWritingTaskType } from '@prisma/client';
-
-const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
 export interface IWritingCriteriaScores {
   taskScore: number;
@@ -31,8 +28,8 @@ const gradeWritingSubmission = async (
   const minWords = task === IELTSWritingTaskType.TASK1 ? 150 : 250;
   const taskCriterionName = task === IELTSWritingTaskType.TASK1 ? 'Task Achievement' : 'Task Response';
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+  const completion = await mistral.chat.completions.create({
+    model: 'mistral-large-latest',
     response_format: { type: 'json_object' },
     messages: [
       {

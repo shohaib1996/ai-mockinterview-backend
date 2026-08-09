@@ -1,9 +1,6 @@
-import { OpenAI } from 'openai';
-import config from '@/app/config';
+import { mistral } from '@/app/lib/mistral';
 import { ApiError } from '@/app/errors/apiError';
 import httpStatus from 'http-status';
-
-const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
 export interface ISpeakingCriteriaScores {
   fluencyCoherence: number;
@@ -25,8 +22,8 @@ const gradeSpeakingTest = async (
     .map((m) => `[Part ${m.part}] ${m.role === 'user' ? 'Candidate' : 'Examiner'}: ${m.content}`)
     .join('\n');
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+  const completion = await mistral.chat.completions.create({
+    model: 'mistral-large-latest',
     response_format: { type: 'json_object' },
     messages: [
       {
