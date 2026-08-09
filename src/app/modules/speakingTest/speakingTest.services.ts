@@ -2,11 +2,15 @@ import prisma from '@/app/lib/prisma';
 import { ApiError } from '@/app/errors/apiError';
 import httpStatus from 'http-status';
 import { mistral } from '@/app/lib/mistral';
+import { OpenAI, toFile } from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources/index';
 import { Difficulty, SessionType } from '@prisma/client';
+import config from '@/app/config';
 import { SpeakingTestGenerator } from './speakingTest.generator';
 import { SpeakingGraderService } from './speakingGrader.service';
 import { IChatPayload, IStoredMessage, ISubmitPart2Payload } from './speakingTest.interface';
+
+const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
 
 const assignSpeakingTest = async (userId: string) => {
   const completedTestIds = (
@@ -146,6 +150,22 @@ ${plainTextInstruction}`;
   return { reply, isPartComplete };
 };
 
+// Cloud transcription for the mobile app's recorded speaking turns (mobile has no
+// browser SpeechRecognition API to fall back on). Deliberately cheap/fast model -
+// this is called on every conversational turn, same cost-conscious pattern already
+// used for generation/grading elsewhere in this module.
+const transcribeAudio = async (buffer: Buffer, mimetype: string) => {
+  const extension = mimetype.split('/')[1]?.split(';')[0] || 'm4a';
+  const file = await toFile(buffer, `speaking-answer.${extension}`, { type: mimetype });
+
+  const transcription = await openai.audio.transcriptions.create({
+    file,
+    model: 'gpt-4o-mini-transcribe',
+  });
+
+  return { text: transcription.text };
+};
+
 const submitPart2 = async (sessionId: string, userId: string, payload: ISubmitPart2Payload) => {
   const { session } = await getSpeakingTestBySession(sessionId, userId);
   if (session.endedAt) {
@@ -213,6 +233,7 @@ export const SpeakingTestServices = {
   assignSpeakingTest,
   getSpeakingTestBySession,
   chat,
+  transcribeAudio,
   submitPart2,
   analyzeSpeakingTest,
   generateOne,

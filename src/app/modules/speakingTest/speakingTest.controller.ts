@@ -44,6 +44,25 @@ const chat = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const transcribe = catchAsync(async (req: Request, res: Response) => {
+  const { id: userId } = req.user as User;
+  const { sessionId } = req.params;
+  if (!sessionId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Session ID is required');
+  }
+  if (!req.file) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Audio file is required');
+  }
+  // Confirms the session belongs to this user before spending money transcribing it.
+  await SpeakingTestServices.getSpeakingTestBySession(sessionId, userId);
+  const result = await SpeakingTestServices.transcribeAudio(req.file.buffer, req.file.mimetype);
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: 'Audio transcribed',
+    data: result,
+  });
+});
+
 const submitPart2 = catchAsync(async (req: Request, res: Response) => {
   const { id: userId } = req.user as User;
   const { sessionId } = req.params;
@@ -77,6 +96,7 @@ export const SpeakingTestController = {
   startSpeakingTest,
   getSpeakingTest,
   chat,
+  transcribe,
   submitPart2,
   analyzeSpeakingTest,
 };
