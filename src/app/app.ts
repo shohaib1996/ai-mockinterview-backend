@@ -14,7 +14,7 @@ app.use(express.json());
 const allowedOrigins = (
   config.ALLOWED_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) ?? [
     config.BASE_URL,
-    'http://localhost:3000',
+    'http://localhost:3000','https://www.ieltszenai.pro'
   ]
 ).filter((o): o is string => !!o);
 
