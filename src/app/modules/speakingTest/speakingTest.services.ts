@@ -155,7 +155,10 @@ ${plainTextInstruction}`;
 // this is called on every conversational turn, same cost-conscious pattern already
 // used for generation/grading elsewhere in this module.
 const transcribeAudio = async (buffer: Buffer, mimetype: string) => {
-  const extension = mimetype.split('/')[1]?.split(';')[0] || 'm4a';
+  // iOS reports recorded m4a audio as "audio/x-m4a" (the "x-" marks a vendor/
+  // non-standard subtype) - strip it so the filename extension matches one of
+  // OpenAI's actually-supported formats instead of e.g. "speaking-answer.x-m4a".
+  const extension = (mimetype.split('/')[1]?.split(';')[0] || 'm4a').replace(/^x-/, '');
   const file = await toFile(buffer, `speaking-answer.${extension}`, { type: mimetype });
 
   const transcription = await openai.audio.transcriptions.create({
