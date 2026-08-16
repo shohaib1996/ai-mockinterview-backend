@@ -73,10 +73,20 @@ const getUserDashboardData = async (userId: string) => {
       : 0;
   // console.log('avgMockInterviewScore:', avgMockInterviewScore);
 
-  const latestUserProgress = await prisma.userProgress.findFirst({
-    where: { userId },
-    orderBy: { date: 'desc' },
-  });
+  // Overall band = average of whichever skills the student has actually scored
+  // sessions in, IELTS-rounded to the nearest 0.5 (.25 rounds up to .5, .75 rounds
+  // up to the next whole band - Math.round(x*2)/2 implements this exactly).
+  const scoredSkillAverages = [
+    listeningSessions.length > 0 ? avgListeningScore : null,
+    readingSessions.length > 0 ? avgReadingScore : null,
+    writingSubmissionsWithScore.length > 0 ? avgWritingScore : null,
+    speakingSessions.length > 0 ? avgSpeakingScore : null,
+  ].filter((score): score is number => score !== null);
+
+  const overallIeltsBand =
+    scoredSkillAverages.length > 0
+      ? Math.round((scoredSkillAverages.reduce((sum, score) => sum + score, 0) / scoredSkillAverages.length) * 2) / 2
+      : 0;
 
   const totalSessionsCompleted = sessions.filter((s) => s.endedAt !== null).length;
   const totalQuizzesTaken = quizAttempts.length;
@@ -122,7 +132,7 @@ const getUserDashboardData = async (userId: string) => {
     avgReadingScore,
     avgWritingScore,
     avgSpeakingScore,
-    overallIeltsBand: latestUserProgress?.ieltsScore ?? 0,
+    overallIeltsBand,
     avgMockInterviewScore,
     totalSessionsCompleted,
     totalQuizzesTaken,
