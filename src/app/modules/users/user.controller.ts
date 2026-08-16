@@ -25,6 +25,16 @@ const loginUserController = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const googleLoginController = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserServices.loginWithGoogle(req.body.idToken);
+
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: 'User logged in successfully',
+    data: result,
+  });
+});
+
 const getAllUsersController = catchAsync(async (req: Request, res: Response) => {
   const { page, limit, id, name, email } = req.query;
   const options: { page?: number; limit?: number; id?: string; name?: string; email?: string } = {};
@@ -98,6 +108,7 @@ const resetPasswordController = catchAsync(async (req: Request, res: Response) =
 export const UserController = {
   createUserController,
   loginUserController,
+  googleLoginController,
   getAllUsersController,
   changeUserRoleController,
   getProfileController,

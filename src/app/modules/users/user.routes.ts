@@ -6,6 +6,7 @@ import {
   createUserZodSchema,
   getAllUsersZodSchema,
   loginUserZodSchema,
+  googleLoginZodSchema,
   changeUserRoleZodSchema,
   editProfileZodSchema,
   resetPasswordZodSchema,
@@ -17,6 +18,7 @@ const router = express.Router();
 
 router.post('/register', validateRequest(createUserZodSchema), UserController.createUserController);
 router.post('/login', validateRequest(loginUserZodSchema), UserController.loginUserController);
+router.post('/google', validateRequest(googleLoginZodSchema), UserController.googleLoginController);
 
 router.get('/profile', auth([Role.ADMIN, Role.USER]), UserController.getProfileController);
 router.patch(

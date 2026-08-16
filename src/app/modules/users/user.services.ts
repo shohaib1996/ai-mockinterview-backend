@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { OAuth2Client } from 'google-auth-library';
 import { Prisma, User, Role } from '@prisma/client';
 
 import { IUser } from './users.interface';
@@ -8,10 +9,17 @@ import { ILoginUserResponse } from './users.interface';
 import prisma from '@/app/lib/prisma';
 import { generateToken } from '@/app/utils/generateToken';
 import { ApiError } from '@/app/errors/apiError';
+import config from '@/app/config';
+
+const googleClient = new OAuth2Client(config.GOOGLE_CLIENT_ID);
 
 const createUser = async (payload: User): Promise<IUser> => {
   try {
     const { email, password, name, role, avatarUrl } = payload;
+
+    if (!password) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
+    }
 
     const isExist = await prisma.user.findFirst({
       where: {
@@ -48,6 +56,10 @@ const loginUser = async (payload: User): Promise<ILoginUserResponse> => {
   try {
     const { email, password } = payload;
 
+    if (!password) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Password is required');
+    }
+
     const user = await prisma.user.findFirst({
       where: {
         email,
@@ -56,6 +68,13 @@ const loginUser = async (payload: User): Promise<ILoginUserResponse> => {
 
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    }
+
+    if (!user.password) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        'This account uses Google Sign-In. Please continue with Google instead.',
+      );
     }
 
     const isPasswordMatch = await bcrypt.compare(password, user.password);
@@ -71,7 +90,56 @@ const loginUser = async (payload: User): Promise<ILoginUserResponse> => {
       avatarUrl: user.avatarUrl,
     });
 
-    return { user, accessToken };
+    const { password: _password, ...userWithoutPassword } = user;
+
+    return { user: userWithoutPassword, accessToken };
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+const loginWithGoogle = async (idToken: string): Promise<ILoginUserResponse> => {
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: config.GOOGLE_CLIENT_ID as string,
+    });
+    const payload = ticket.getPayload();
+
+    if (!payload || !payload.email || !payload.email_verified) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Could not verify Google account');
+    }
+
+    const { email, name, picture } = payload;
+
+    // Link by verified email: Google already proved ownership of this address, so
+    // it's safe to attach to an existing account (password-based or Google-only)
+    // rather than creating a duplicate.
+    let user = await prisma.user.findFirst({ where: { email } });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name: name ?? null,
+          avatarUrl: picture ?? null,
+          password: null,
+          role: Role.USER,
+        },
+      });
+    }
+
+    const accessToken = generateToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      avatarUrl: user.avatarUrl,
+    });
+
+    const { password: _password, ...userWithoutPassword } = user;
+
+    return { user: userWithoutPassword, accessToken };
   } catch (error) {
     console.log(error);
     throw error;
@@ -223,6 +291,13 @@ const resetPassword = async (
       throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
     }
 
+    if (!user.password) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        'This account uses Google Sign-In and has no password to reset.',
+      );
+    }
+
     const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
 
     if (!isPasswordMatch) {
@@ -247,6 +322,7 @@ const resetPassword = async (
 export const UserServices = {
   createUser,
   loginUser,
+  loginWithGoogle,
   getAllUsers,
   changeUserRole,
   getProfile,

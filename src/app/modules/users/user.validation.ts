@@ -17,6 +17,12 @@ export const loginUserZodSchema = z.object({
   }),
 });
 
+export const googleLoginZodSchema = z.object({
+  body: z.object({
+    idToken: z.string().min(1),
+  }),
+});
+
 export const getAllUsersZodSchema = z.object({
   query: z.object({
     page: z.string().optional(),
@@ -53,6 +59,7 @@ export const resetPasswordZodSchema = z.object({
 export const UserValidation = {
   createUserZodSchema,
   loginUserZodSchema,
+  googleLoginZodSchema,
   getAllUsersZodSchema,
   changeUserRoleZodSchema,
   editProfileZodSchema,
