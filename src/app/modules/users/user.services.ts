@@ -103,12 +103,7 @@ const loginWithGoogle = async (idToken: string): Promise<ILoginUserResponse> => 
   try {
     const ticket = await googleClient.verifyIdToken({
       idToken,
-      // Web frontend tokens are audienced to GOOGLE_CLIENT_ID; the Android app's tokens
-      // are audienced to GOOGLE_ANDROID_CLIENT_ID (Google won't allow a custom-scheme
-      // redirect URI for a 'WEB' client, so Android authenticates through its own client).
-      audience: [config.GOOGLE_CLIENT_ID, config.GOOGLE_ANDROID_CLIENT_ID].filter(
-        (id): id is string => !!id,
-      ),
+      audience: config.GOOGLE_CLIENT_ID as string,
     });
     const payload = ticket.getPayload();
 

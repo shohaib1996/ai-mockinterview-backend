@@ -18,5 +18,4 @@ export default {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-  GOOGLE_ANDROID_CLIENT_ID: process.env.GOOGLE_ANDROID_CLIENT_ID,
 };
